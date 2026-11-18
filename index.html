@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#101114">
+  <meta name="description" content="PARTS MARKET — Everything in One Place. Sports bike parts and accessories.">
+  <title>PARTS MARKET | Everything in One Place</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./config.js"></script>
+</head>
+<body>
+  <div class="topline">ঢাকাসহ সারা বাংলাদেশে ডেলিভারি • অর্ডার সহায়তা: 01954 191730</div>
+  <header class="site-header">
+    <a class="brand" href="./"><span class="brand-mark">PM</span><span><b>PARTS MARKET</b><small>EVERYTHING IN ONE PLACE</small></span></a>
+    <div class="search-wrap"><input id="search" type="search" placeholder="পণ্যের নাম দিয়ে খুঁজুন..."><button id="searchBtn" aria-label="Search">⌕</button></div>
+    <nav><a href="#products">পণ্য</a><a href="#categories">ক্যাটাগরি</a><button class="cart-open" id="cartOpen">কার্ট <span id="cartCount">0</span></button></nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">BUILT FOR RIDERS</p>
+        <h1>আপনার বাইকের<br><em>পারফেক্ট আপগ্রেড</em></h1>
+        <p>স্পোর্টস বাইকের পার্টস, এক্সেসরিজ ও রাইডিং গিয়ার—সব এক জায়গায়।</p>
+        <a class="btn btn-red" href="#products">শপিং শুরু করুন <span>→</span></a>
+      </div>
+      <div class="hero-art"><div class="speed-ring"></div><div class="hero-label">RIDE<br><b>BEYOND</b></div><div class="hero-stripe"></div></div>
+    </section>
+
+    <section class="benefits">
+      <div><b>✓</b><span>কোয়ালিটি পণ্য<small>বাছাইকৃত কালেকশন</small></span></div>
+      <div><b>↗</b><span>সারা দেশে ডেলিভারি<small>নিরাপদ প্যাকেজিং</small></span></div>
+      <div><b>৳</b><span>সহজ পেমেন্ট<small>ক্যাশ অন ডেলিভারি</small></span></div>
+    </section>
+
+    <section class="section" id="categories">
+      <div class="section-heading"><div><p class="eyebrow">EXPLORE COLLECTION</p><h2>ক্যাটাগরি</h2></div></div>
+      <div class="category-grid">
+        <button class="category-tile active" data-category="সব"><span>⚙</span><b>সব পণ্য</b></button>
+        <button class="category-tile" data-category="Brake"><span>◉</span><b>Brake Parts</b></button>
+        <button class="category-tile" data-category="Clutch"><span>⌁</span><b>Clutch Parts</b></button>
+        <button class="category-tile" data-category="Accessories"><span>✦</span><b>Accessories</b></button>
+        <button class="category-tile" data-category="Lighting"><span>☼</span><b>Lighting</b></button>
+      </div>
+    </section>
+
+    <section class="section" id="products">
+      <div class="section-heading"><div><p class="eyebrow">THE PARTS MARKET EDIT</p><h2>জনপ্রিয় পণ্য</h2></div><span class="muted" id="productCount"></span></div>
+      <div id="productGrid" class="product-grid"><div class="loading">পণ্য লোড হচ্ছে...</div></div>
+    </section>
+
+    <section class="support-banner">
+      <div><p class="eyebrow">NEED HELP CHOOSING?</p><h2>সঠিক পার্টস খুঁজে পেতে<br>আমাদের সাথে কথা বলুন</h2></div>
+      <a class="btn btn-light" href="https://wa.me/8801954191730" target="_blank" rel="noopener">WhatsApp করুন ↗</a>
+    </section>
+  </main>
+
+  <footer><a class="brand" href="#"><span class="brand-mark">PM</span><span><b>PARTS MARKET</b><small>EVERYTHING IN ONE PLACE</small></span></a><p>© <span id="year"></span> PARTS MARKET. All rights reserved.</p><p>Facebook · YouTube · TikTok</p></footer>
+
+  <div class="overlay" id="overlay"></div>
+  <aside class="drawer" id="cartDrawer">
+    <div class="drawer-head"><h3>আপনার কার্ট</h3><button class="icon-btn" id="cartClose">✕</button></div>
+    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-summary"><div><span>সাবটোটাল</span><b id="cartTotal">৳0</b></div><button class="btn btn-red full" id="checkoutOpen">অর্ডার সম্পন্ন করুন</button></div>
+  </aside>
+
+  <section class="modal" id="checkoutModal">
+    <div class="modal-head"><h3>ডেলিভারি তথ্য</h3><button class="icon-btn" data-close="checkoutModal">✕</button></div>
+    <form id="checkoutForm">
+      <label>সম্পূর্ণ নাম<input name="customer_name" required autocomplete="name"></label>
+      <label>মোবাইল নম্বর<input name="phone" required inputmode="tel" placeholder="01XXXXXXXXX"></label>
+      <label>সম্পূর্ণ ঠিকানা<textarea name="address" rows="3" required></textarea></label>
+      <label>নোট (ঐচ্ছিক)<textarea name="note" rows="2"></textarea></label>
+      <div class="payment-note">পেমেন্ট পদ্ধতি: <b>Cash on Delivery</b></div>
+      <button class="btn btn-red full" type="submit">অর্ডার কনফার্ম করুন</button>
+      <p class="form-message" id="checkoutMessage"></p>
+    </form>
+  </section>
+
+  <section class="modal admin-modal" id="adminModal">
+    <div class="modal-head"><h3>Admin Portal</h3><button class="icon-btn" data-close="adminModal">✕</button></div>
+    <div id="adminAuth">
+      <p class="muted">শুধুমাত্র অনুমোদিত অ্যাডমিন অ্যাকাউন্ট ব্যবহার করুন।</p>
+      <form id="loginForm"><label>ইমেইল<input name="email" type="email" required></label><label>পাসওয়ার্ড<input name="password" type="password" required></label><button class="btn btn-red full">লগইন</button><p class="form-message" id="loginMessage"></p></form>
+    </div>
+    <div id="adminPanel" hidden>
+      <div class="admin-toolbar"><b>পণ্য ব্যবস্থাপনা</b><button class="btn btn-dark" id="logoutBtn">লগআউট</button></div>
+      <form id="productForm" class="admin-form">
+        <input type="hidden" name="id">
+        <label>পণ্যের নাম<input name="name" required></label>
+        <div class="form-two"><label>দাম (৳)<input name="price" type="number" min="0" required></label><label>স্টক<input name="stock" type="number" min="0" value="1" required></label></div>
+        <div class="form-two"><label>ক্যাটাগরি<select name="category"><option>Brake</option><option>Clutch</option><option>Accessories</option><option>Lighting</option><option>Other</option></select></label><label>বাইক মডেল<input name="compatibility" placeholder="যেমন: R15 V3"></label></div>
+        <label>বিবরণ<textarea name="description" rows="2"></textarea></label>
+        <label>পণ্যের ছবি<input name="image" type="file" accept="image/*"><small class="muted">ছবি না দিলে আগের ছবিই থাকবে।</small></label>
+        <div class="form-two"><button class="btn btn-red">সেভ করুন</button><button class="btn btn-outline" type="button" id="resetProduct">নতুন পণ্য</button></div>
+        <p class="form-message" id="productMessage"></p>
+      </form>
+      <h4>পণ্যের তালিকা</h4><div id="adminProducts" class="admin-list"></div>
+      <h4>সাম্প্রতিক অর্ডার</h4><div id="adminOrders" class="admin-list"></div>
+    </div>
+  </section>
+
+  <button class="admin-shortcut" id="adminOpen" title="Admin">⚙</button>
+  <div class="toast" id="toast"></div>
+  <script src="./app.js"></script>
+</body>
+</html>
