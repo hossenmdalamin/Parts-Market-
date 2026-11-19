@@ -79,18 +79,31 @@ function renderProducts(){
  const term=$("search").value.trim().toLowerCase();
  const list=products.filter(p=>(activeCategory==="সব"||p.category===activeCategory)&&(`${p.name} ${p.category} ${p.compatibility||""}`.toLowerCase().includes(term)));
  $("productCount").textContent=`${list.length}টি পণ্য`;
- $("productGrid").innerHTML=list.length?list.map(p=>`<article class="product-card"><div class="product-image">${p.image_url||p.image?`<img src="${esc(p.image_url||p.image)}" alt="${esc(p.name)}" loading="lazy">`:'<span class="placeholder">⚙</span>'}<span class="stock-tag">${Number(p.stock)>0?"স্টকে আছে":"স্টক শেষ"}</span></div><div class="product-info"><small>${esc(p.category||"OTHER")}</small><h3>${esc(p.name)}</h3><p>${esc(p.compatibility||p.description||"")}</p><div class="product-bottom"><b class="price">${money(p.price)}</b><button class="add-btn" data-add="${esc(p.id)}" ${Number(p.stock)<1?"disabled":""}>কার্টে +</button></div></div></article>`).join(""):'<div class="empty">কোনো পণ্য পাওয়া যায়নি।</div>';
- document.querySelectorAll("[data-add]").forEach(b=>b.addEventListener("click",()=>addToCart(b.dataset.add)));
+ $("productGrid").innerHTML=list.length?list.map(p=>{
+  const colors=Array.isArray(p.colors)?p.colors:[];
+  const colorPicker=colors.length?`<label class="product-color-picker">কালার নির্বাচন করুন<select data-product-color="${esc(p.id)}" required><option value="">কালার বেছে নিন</option>${colors.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("")}</select></label>`:"";
+  return `<article class="product-card"><div class="product-image">${p.image_url||p.image?`<img src="${esc(p.image_url||p.image)}" alt="${esc(p.name)}" loading="lazy">`:'<span class="placeholder">⚙</span>'}<span class="stock-tag">${Number(p.stock)>0?"স্টকে আছে":"স্টক শেষ"}</span></div><div class="product-info"><small>${esc(p.category||"OTHER")}</small><h3>${esc(p.name)}</h3><p>${esc(p.compatibility||p.description||"")}</p>${colorPicker}<div class="product-bottom"><b class="price">${money(p.price)}</b><button class="add-btn" data-add="${esc(p.id)}" ${Number(p.stock)<1?"disabled":""}>কার্টে +</button></div></div></article>`;
+ }).join(""):'<div class="empty">কোনো পণ্য পাওয়া যায়নি।</div>';
+ document.querySelectorAll("[data-add]").forEach(b=>b.addEventListener("click",()=>{const select=document.querySelector(`[data-product-color="${CSS.escape(b.dataset.add)}"]`);if(select&&!select.value){toast("কার্টে যোগ করার আগে কালার নির্বাচন করুন");select.focus();return}addToCart(b.dataset.add,select?.value||"")}));
 }
-function addToCart(id){const p=products.find(x=>String(x.id)===String(id));if(!p)return;const found=cart.find(x=>String(x.id)===String(id));if(found){if(found.qty>=Number(p.stock)){toast("স্টকের চেয়ে বেশি যোগ করা যাবে না");return}found.qty++}else cart.push({id:p.id,name:p.name,price:Number(p.price),qty:1,stock:Number(p.stock)});saveCart();toast("কার্টে যোগ হয়েছে")}
+function cartKey(x){return String(x.id)+"::"+(x.color||"")}
+function addToCart(id,color=""){
+ const p=products.find(x=>String(x.id)===String(id));if(!p)return;
+ const available=Array.isArray(p.colors)?p.colors:[];
+ if(available.length&&!available.includes(color)){toast("কার্টে যোগ করার আগে কালার নির্বাচন করুন");return}
+ const found=cart.find(x=>cartKey(x)===String(id)+"::"+color);
+ if(found){if(found.qty>=Number(p.stock)){toast("স্টকের চেয়ে বেশি যোগ করা যাবে না");return}found.qty++}
+ else cart.push({id:p.id,name:p.name,price:Number(p.price),qty:1,stock:Number(p.stock),color});
+ saveCart();toast("কার্টে যোগ হয়েছে");
+}
 function renderCart(){
  $("cartCount").textContent=cart.reduce((n,x)=>n+x.qty,0);
- $("cartItems").innerHTML=cart.length?cart.map(x=>`<div class="cart-row"><div><b>${esc(x.name)}</b><small>${money(x.price)} × ${x.qty}</small></div><div class="qty-controls"><button data-dec="${esc(x.id)}">−</button><b>${x.qty}</b><button data-inc="${esc(x.id)}">+</button></div></div>`).join(""):'<div class="empty">কার্ট এখনো খালি।</div>';
+ $("cartItems").innerHTML=cart.length?cart.map(x=>`<div class="cart-row"><div><b>${esc(x.name)}</b><small>${x.color?"কালার: "+esc(x.color)+" · ":""}${money(x.price)} × ${x.qty}</small></div><div class="qty-controls"><button data-dec="${esc(cartKey(x))}">−</button><b>${x.qty}</b><button data-inc="${esc(cartKey(x))}">+</button></div></div>`).join(""):'<div class="empty">কার্ট এখনো খালি।</div>';
  $("cartTotal").textContent=money(cart.reduce((n,x)=>n+x.price*x.qty,0));
  document.querySelectorAll("[data-dec]").forEach(b=>b.onclick=()=>changeQty(b.dataset.dec,-1));
  document.querySelectorAll("[data-inc]").forEach(b=>b.onclick=()=>changeQty(b.dataset.inc,1));
 }
-function changeQty(id,d){const x=cart.find(i=>String(i.id)===String(id));if(!x)return;if(d>0&&x.qty>=x.stock){toast("স্টকের চেয়ে বেশি যোগ করা যাবে না");return}x.qty+=d;if(x.qty<1)cart=cart.filter(i=>String(i.id)!==String(id));saveCart()}
+function changeQty(key,d){const x=cart.find(i=>cartKey(i)===key);if(!x)return;if(d>0&&x.qty>=x.stock){toast("স্টকের চেয়ে বেশি যোগ করা যাবে না");return}x.qty+=d;if(x.qty<1)cart=cart.filter(i=>cartKey(i)!==key);saveCart()}
 
 async function checkout(e) {
   e.preventDefault();
@@ -143,7 +156,7 @@ async function checkout(e) {
 
   // Create WhatsApp order message
   const itemText = orderedItems.map((x, i) =>
-    `${i + 1}. ${x.name} × ${x.qty} = ${money(x.price * x.qty)}`
+    `${i + 1}. ${x.name}${x.color ? " (Color: " + x.color + ")" : ""} × ${x.qty} = ${money(x.price * x.qty)}`
   ).join("\n");
 
   const message =
@@ -223,7 +236,7 @@ function renderAdminOrders(){
  const list=adminOrderFilter==="all"?adminOrdersCache:adminOrdersCache.filter(o=>o.status===adminOrderFilter);
  $("adminOrders").innerHTML=list.length?list.map(o=>`<article class="order-card"><div class="order-card-top"><div><b>#${esc(o.id)} · ${esc(o.customer_name)}</b><small>${new Date(o.created_at).toLocaleString("bn-BD")}</small></div><span class="order-badge status-${esc(o.status)}">${esc(o.status)}</span></div><div class="order-customer"><span>☎ ${esc(o.phone)}</span><span>৳${money(o.total)}</span></div><p class="order-address">${esc(o.address)}</p><div class="order-card-bottom"><button class="text-action" data-order-detail="${esc(o.id)}">বিস্তারিত</button><select data-status="${esc(o.id)}"><option value="pending" ${o.status==="pending"?"selected":""}>Pending</option><option value="confirmed" ${o.status==="confirmed"?"selected":""}>Confirmed</option><option value="shipped" ${o.status==="shipped"?"selected":""}>Shipped</option><option value="delivered" ${o.status==="delivered"?"selected":""}>Delivered</option><option value="cancelled" ${o.status==="cancelled"?"selected":""}>Cancelled</option></select></div><div class="order-detail" id="orderDetail-${esc(o.id)}" hidden><b>নোট:</b> ${esc(o.note||"কোনো নোট নেই")}<div id="orderItems-${esc(o.id)}">পণ্যের তথ্য লোড হচ্ছে...</div></div></article>`).join(""):'<div class="empty">এই ক্যাটাগরিতে কোনো অর্ডার নেই।</div>';
  document.querySelectorAll("[data-status]").forEach(s=>s.onchange=async()=>{const {error}=await db.from("orders").update({status:s.value}).eq("id",s.dataset.status);if(error){toast(error.message);return}const o=adminOrdersCache.find(x=>String(x.id)===s.dataset.status);if(o)o.status=s.value;toast("অর্ডারের অবস্থা আপডেট হয়েছে");updateAdminStats();renderAdminOrders()});
- document.querySelectorAll("[data-order-detail]").forEach(b=>b.onclick=async()=>{const id=b.dataset.orderDetail,box=$("orderDetail-"+id);box.hidden=!box.hidden;if(!box.hidden){const {data,error}=await db.from("order_items").select("product_name,unit_price,quantity").eq("order_id",id);$("orderItems-"+id).innerHTML=error?esc(error.message):(data||[]).map(x=>`<p>${esc(x.product_name)} × ${x.quantity} — ${money(x.unit_price*x.quantity)}</p>`).join("")||"পণ্যের তথ্য নেই"}});
+ document.querySelectorAll("[data-order-detail]").forEach(b=>b.onclick=async()=>{const id=b.dataset.orderDetail,box=$("orderDetail-"+id);box.hidden=!box.hidden;if(!box.hidden){const {data,error}=await db.from("order_items").select("product_name,unit_price,quantity,selected_color").eq("order_id",id);$("orderItems-"+id).innerHTML=error?esc(error.message):(data||[]).map(x=>`<p>${esc(x.product_name)}${x.selected_color ? " · কালার: "+esc(x.selected_color) : ""} × ${x.quantity} — ${money(x.unit_price*x.quantity)}</p>`).join("")||"পণ্যের তথ্য নেই"}});
 }
 function updateAdminStats(ps=[]){
  const total=adminOrdersCache.reduce((n,o)=>n+Number(o.total||0),0),pending=adminOrdersCache.filter(o=>o.status==="pending").length;
@@ -255,7 +268,7 @@ async function refreshAdmin(){
  renderAdminOrders();renderCustomers();$("adminEmail").textContent=currentUser?.email||"—";
 }
 
-function editProduct(p){const f=$("productForm");["id","name","price","stock","category","compatibility","description"].forEach(k=>f.elements[k].value=p[k]??"");$("productMessage").textContent="এডিট মোড";renderCategoryOptions(p.category)}
+function editProduct(p){const f=$("productForm");["id","name","price","stock","category","compatibility","description"].forEach(k=>f.elements[k].value=p[k]??"");f.elements.colors.value=(p.colors||[]).join(", ");$("productMessage").textContent="এডিট মোড";renderCategoryOptions(p.category)}
 async function deleteProduct(id){if(!confirm("এই পণ্যটি মুছে ফেলতে চান?"))return;const {error}=await db.from("products").delete().eq("id",id);if(error)toast(error.message);else{toast("পণ্য মুছে ফেলা হয়েছে");await refreshAdmin();await loadProducts()}}
 async function optimizeProductImage(file){
  if(!file.type.startsWith("image/"))throw new Error("শুধু ছবির ফাইল আপলোড করুন।");
@@ -288,7 +301,7 @@ async function saveProduct(e){
   const savedKB=Math.max(1,Math.round(optimizedFile.size/1024));
   $("productMessage").textContent=`ছবি কমপ্রেস হয়েছে (${savedKB} KB)। পণ্য সেভ হচ্ছে...`;
  }
- const row={name:fd.get("name").trim(),price:Number(fd.get("price")),stock:Number(fd.get("stock")),category:fd.get("category"),compatibility:fd.get("compatibility"),description:fd.get("description"),active:true};
+ const colors=[...new Set(String(fd.get("colors")||"").split(",").map(c=>c.trim()).filter(Boolean))];\n const row={name:fd.get("name").trim(),price:Number(fd.get("price")),stock:Number(fd.get("stock")),category:fd.get("category"),compatibility:fd.get("compatibility"),description:fd.get("description"),colors,active:true};
  if(image_url)row.image_url=image_url;
  let q=id?db.from("products").update(row).eq("id",id):db.from("products").insert(row);
  const {error}=await q;if(error){$("productMessage").textContent=error.message;return}
