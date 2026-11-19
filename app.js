@@ -91,15 +91,125 @@ function renderCart(){
  document.querySelectorAll("[data-inc]").forEach(b=>b.onclick=()=>changeQty(b.dataset.inc,1));
 }
 function changeQty(id,d){const x=cart.find(i=>String(i.id)===String(id));if(!x)return;if(d>0&&x.qty>=x.stock){toast("স্টকের চেয়ে বেশি যোগ করা যাবে না");return}x.qty+=d;if(x.qty<1)cart=cart.filter(i=>String(i.id)!==String(id));saveCart()}
-async function checkout(e){
- e.preventDefault();if(!cart.length){toast("কার্ট খালি");return}
- const f=new FormData(e.target), payload={p_customer_name:f.get("customer_name").trim(),p_phone:f.get("phone").trim(),p_address:f.get("address").trim(),p_note:f.get("note").trim(),p_items:cart.map(x=>({product_id:x.id,quantity:x.qty}))};
- $("checkoutMessage").textContent="অর্ডার পাঠানো হচ্ছে...";
- if(!db){$("checkoutMessage").textContent="ডেটাবেস সেটআপ করা হয়নি। Supabase কনফিগার করে আবার চেষ্টা করুন।";return}
- const {data,error}=await db.rpc("place_order",payload);
- if(error){$("checkoutMessage").textContent=error.message;return}
- cart=[];saveCart();e.target.reset();$("checkoutMessage").textContent=`অর্ডার সফল! অর্ডার নম্বর: ${data}`;toast("অর্ডার সফলভাবে গ্রহণ করা হয়েছে");setTimeout(()=>{hideModal("checkoutModal");closeCart()},2200);
+
+async function checkout(e) {
+  e.preventDefault();
+
+  if (!cart.length) {
+    toast("কার্ট খালি");
+    return;
+  }
+
+  const f = new FormData(e.target);
+
+  const customer = {
+    name: f.get("customer_name").trim(),
+    phone: f.get("phone").trim(),
+    address: f.get("address").trim(),
+    note: f.get("note").trim()
+  };
+
+  // Save cart details before clearing it
+  const orderedItems = cart.map(x => ({ ...x }));
+  const total = orderedItems.reduce(
+    (sum, x) => sum + x.price * x.qty, 0
+  );
+
+  const payload = {
+    p_customer_name: customer.name,
+    p_phone: customer.phone,
+    p_address: customer.address,
+    p_note: customer.note,
+    p_items: orderedItems.map(x => ({
+      product_id: x.id,
+      quantity: x.qty
+    }))
+  };
+
+  $("checkoutMessage").textContent = "অর্ডার পাঠানো হচ্ছে...";
+
+  if (!db) {
+    $("checkoutMessage").textContent =
+      "Supabase সেটআপ করা হয়নি।";
+    return;
+  }
+
+  const { data, error } = await db.rpc("place_order", payload);
+
+  if (error) {
+    $("checkoutMessage").textContent = error.message;
+    return;
+  }
+
+  // Create WhatsApp order message
+  const itemText = orderedItems.map((x, i) =>
+    `${i + 1}. ${x.name} × ${x.qty} = ${money(x.price * x.qty)}`
+  ).join("\n");
+
+  const message =
+`🛒 NEW ORDER - PARTS MARKET
+
+Order Number: ${data}
+
+Customer Name: ${customer.name}
+Phone: ${customer.phone}
+Address: ${customer.address}
+
+ORDER DETAILS:
+${itemText}
+
+Total Amount: ${money(total)}
+
+Customer Note: ${customer.note || "নেই"}
+
+Order Status: Pending
+
+অর্ডারটি গ্রহণ করার জন্য ধন্যবাদ।
+- Parts Market`;
+
+  const whatsappURL =
+    "https://wa.me/8801954191730?text=" +
+    encodeURIComponent(message);
+
+  // Clear cart after successful database order
+  cart = [];
+  saveCart();
+  e.target.reset();
+
+  $("checkoutMessage").textContent =
+    "🎉 আপনার অর্ডার প্রায় সম্পন্ন!";
+
+  // Remove previous WhatsApp button
+  document.getElementById("whatsappOrderButton")?.remove();
+
+  // Show instruction
+  const instruction = document.createElement("p");
+  instruction.textContent =
+    "আপনার অর্ডারটি নিশ্চিত করতে WhatsApp-এর মাধ্যমে অর্ডারের বিস্তারিত তথ্য আমাদের কাছে পাঠিয়ে দিন। WhatsApp-এ মেসেজ পাঠানোর পরই আপনার অর্ডার কনফার্ম হবে।";
+
+  instruction.style.cssText =
+    "margin:12px 0;padding:12px;background:#e8f7ed;color:#176b35;border-radius:10px;line-height:1.7;";
+
+  $("checkoutMessage").appendChild(instruction);
+
+  // Create WhatsApp button
+  const button = document.createElement("button");
+  button.id = "whatsappOrderButton";
+  button.type = "button";
+  button.textContent = "🟢 Send Order on WhatsApp";
+
+  button.style.cssText =
+    "width:100%;padding:14px;margin-top:10px;background:#25D366;color:white;border:0;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;";
+
+  button.onclick = () => {
+    window.open(whatsappURL, "_blank");
+  };
+
+  $("checkoutMessage").appendChild(button);
+
+  toast("অর্ডার সফলভাবে সংরক্ষিত হয়েছে");
 }
+
 let adminOrdersCache=[], adminOrderFilter="all";
 const bnNum=n=>Number(n||0).toLocaleString("bn-BD");
 function setAdminTab(tab){
