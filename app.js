@@ -82,7 +82,7 @@ function renderProducts(){
  $("productGrid").innerHTML=list.length?list.map(p=>{
   const colors=Array.isArray(p.colors)?p.colors:[];
   const colorPicker=colors.length?`<label class="product-color-picker">কালার নির্বাচন করুন<select data-product-color="${esc(p.id)}" required><option value="">কালার বেছে নিন</option>${colors.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("")}</select></label>`:"";
-  return `<article class="product-card"><div class="product-image">${p.image_url||p.image?`<img src="${esc(p.image_url||p.image)}" alt="${esc(p.name)}" loading="lazy">`:'<span class="placeholder">⚙</span>'}<span class="stock-tag">${Number(p.stock)>0?"স্টকে আছে":"স্টক শেষ"}</span></div><div class="product-info"><small>${esc(p.category||"OTHER")}</small><h3>${esc(p.name)}</h3><p>${esc(p.compatibility||p.description||"")}</p>${colorPicker}<div class="product-bottom"><b class="price">${money(p.price)}</b><button class="add-btn" data-add="${esc(p.id)}" ${Number(p.stock)<1?"disabled":""}>কার্টে +</button></div></div></article>`;
+  return `<article class="product-card"><div class="product-image">${p.image_url||p.image?`<img src="${esc(p.image_url||p.image)}" alt="${esc(p.name)}" loading="lazy">`:'<span class="placeholder">⚙</span>'}<span class="stock-tag">${Number(p.stock)>0?"ইন স্টক":"স্টক আউট"}</span></div><div class="product-info"><small>${esc(p.category||"OTHER")}</small><h3>${esc(p.name)}</h3><p>${esc(p.compatibility||p.description||"")}</p>${colorPicker}<div class="product-bottom"><b class="price">${money(p.price)}</b><button class="add-btn" data-add="${esc(p.id)}" ${Number(p.stock)<1?"disabled":""}>কার্টে +</button></div></div></article>`;
  }).join(""):'<div class="empty">কোনো পণ্য পাওয়া যায়নি।</div>';
  document.querySelectorAll("[data-add]").forEach(b=>b.addEventListener("click",()=>{const select=document.querySelector(`[data-product-color="${CSS.escape(b.dataset.add)}"]`);if(select&&!select.value){toast("কার্টে যোগ করার আগে কালার নির্বাচন করুন");select.focus();return}addToCart(b.dataset.add,select?.value||"")}));
 }
@@ -262,7 +262,7 @@ async function refreshAdmin(){
  await refreshCategoryManager();adminOrdersCache=orders||[];updateAdminStats(ps||[]);
  const productTerm=($("adminProductSearch")?.value||"").toLowerCase();
  const filtered=(ps||[]).filter(p=>(p.name+" "+p.category+" "+(p.compatibility||"")).toLowerCase().includes(productTerm));
- $("adminProducts").innerHTML=filtered.map(p=>`<div class="admin-item"><span><b>${esc(p.name)}</b><br><small>${esc(p.category)} · ${money(p.price)} · স্টক ${p.stock}</small></span><span><button data-edit="${p.id}">এডিট</button><button data-delete="${p.id}">ডিলিট</button></span></div>`).join("")||'<div class="empty">কোনো পণ্য নেই</div>';
+ $("adminProducts").innerHTML=filtered.map(p=>`<div class="admin-item"><span><b>${esc(p.name)}</b><br><small>${esc(p.category)} · ${money(p.price)} · ${Number(p.stock)>0?"ইন স্টক":"স্টক আউট"}</small></span><span><button data-edit="${p.id}">এডিট</button><button data-delete="${p.id}">ডিলিট</button></span></div>`).join("")||'<div class="empty">কোনো পণ্য নেই</div>';
  document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>{editProduct((ps||[]).find(p=>String(p.id)===b.dataset.edit));$("productForm").hidden=false;$("productForm").scrollIntoView({behavior:"smooth",block:"start"})});
  document.querySelectorAll("[data-delete]").forEach(b=>b.onclick=()=>deleteProduct(b.dataset.delete));
  $("dashboardRecentOrders").innerHTML=adminOrdersCache.slice(0,5).map(o=>`<div class="recent-order-row"><b>#${esc(o.id)} · ${esc(o.customer_name)}</b><span>${money(o.total)}</span><i class="order-badge status-${esc(o.status)}">${esc(o.status)}</i></div>`).join("")||'<div class="empty">এখনো কোনো অর্ডার নেই</div>';
@@ -302,7 +302,8 @@ async function saveProduct(e){
   const savedKB=Math.max(1,Math.round(optimizedFile.size/1024));
   $("productMessage").textContent=`ছবি কমপ্রেস হয়েছে (${savedKB} KB)। পণ্য সেভ হচ্ছে...`;
  }
- const colors=[...new Set(String(fd.get("colors")||"").split(",").map(c=>c.trim()).filter(Boolean))];\n const row={name:fd.get("name").trim(),price:Number(fd.get("price")),stock:Number(fd.get("stock")),category:fd.get("category"),compatibility:fd.get("compatibility"),description:fd.get("description"),colors,active:true};
+ const colors=[...new Set(String(fd.get("colors")||"").split(",").map(c=>c.trim()).filter(Boolean))];
+  const row={name:fd.get("name").trim(),price:Number(fd.get("price")),stock:Number(fd.get("stock")),category:fd.get("category"),compatibility:fd.get("compatibility"),description:fd.get("description"),colors,active:true};
  if(image_url)row.image_url=image_url;
  let q=id?db.from("products").update(row).eq("id",id):db.from("products").insert(row);
  const {error}=await q;if(error){$("productMessage").textContent=error.message;return}
