@@ -359,4 +359,5 @@ async function loadStoreBranding(){
   const items=[["facebook_url","Facebook","f"],["youtube_url","YouTube","▶"],["tiktok_url","TikTok","♪"]];
   $("socialLinks").innerHTML=items.filter(([key])=>data[key]).map(([key,label,mark])=>'<a href="'+esc(data[key])+'" target="_blank" rel="noopener noreferrer" aria-label="'+label+'">'+mark+' '+label+'</a>').join("");
 }
-loadStoreBranding();\nif(new URLSearchParams(location.search).get("cart")==="1"){openCart();history.replaceState({}, "", location.pathname)}
+loadStoreBranding();
+if(new URLSearchParams(location.search).get("cart")==="1"){openCart();history.replaceState({}, "", location.pathname)}
