@@ -257,10 +257,37 @@ async function refreshAdmin(){
 
 function editProduct(p){const f=$("productForm");["id","name","price","stock","category","compatibility","description"].forEach(k=>f.elements[k].value=p[k]??"");$("productMessage").textContent="এডিট মোড";renderCategoryOptions(p.category)}
 async function deleteProduct(id){if(!confirm("এই পণ্যটি মুছে ফেলতে চান?"))return;const {error}=await db.from("products").delete().eq("id",id);if(error)toast(error.message);else{toast("পণ্য মুছে ফেলা হয়েছে");await refreshAdmin();await loadProducts()}}
+async function optimizeProductImage(file){
+ if(!file.type.startsWith("image/"))throw new Error("শুধু ছবির ফাইল আপলোড করুন।");
+ const image=new Image(),objectUrl=URL.createObjectURL(file);
+ try{
+  await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(new Error("ছবিটি পড়া যাচ্ছে না। JPG বা PNG ছবি ব্যবহার করুন।"));image.src=objectUrl});
+  const scale=Math.min(1,1200/Math.max(image.naturalWidth,image.naturalHeight));
+  const width=Math.max(1,Math.round(image.naturalWidth*scale)),height=Math.max(1,Math.round(image.naturalHeight*scale));
+  const canvas=document.createElement("canvas");canvas.width=width;canvas.height=height;
+  const ctx=canvas.getContext("2d");if(!ctx)throw new Error("ছবি কমপ্রেস করা যাচ্ছে না।");
+  ctx.drawImage(image,0,0,width,height);
+  const makeBlob=type=>new Promise(resolve=>canvas.toBlob(resolve,type,0.85));
+  let blob=await makeBlob("image/webp"),ext="webp";
+  if(!blob||blob.type!=="image/webp"){blob=await makeBlob("image/jpeg");ext="jpg"}
+  if(!blob)throw new Error("ছবি কমপ্রেস করা যায়নি। অন্য ছবি দিয়ে চেষ্টা করুন।");
+  return new File([blob],`${crypto.randomUUID()}.${ext}`,{type:blob.type,lastModified:Date.now()});
+ }finally{URL.revokeObjectURL(objectUrl)}
+}
 async function saveProduct(e){
  e.preventDefault();const f=e.target,fd=new FormData(f),id=fd.get("id");let image_url=null;const file=f.elements.image.files[0];
  $("productMessage").textContent="সেভ হচ্ছে...";
- if(file){const ext=file.name.split(".").pop().toLowerCase(),path=`${crypto.randomUUID()}.${ext}`;const {error:upErr}=await db.storage.from("product-images").upload(path,file,{upsert:false,contentType:file.type});if(upErr){$("productMessage").textContent=upErr.message;return}image_url=db.storage.from("product-images").getPublicUrl(path).data.publicUrl}
+ if(file){
+  let optimizedFile;
+  try{optimizedFile=await optimizeProductImage(file)}
+  catch(err){$("productMessage").textContent=err.message||"ছবি প্রস্তুত করা যায়নি।";return}
+  const path=optimizedFile.name;
+  const {error:upErr}=await db.storage.from("product-images").upload(path,optimizedFile,{upsert:false,contentType:optimizedFile.type});
+  if(upErr){$("productMessage").textContent=upErr.message;return}
+  image_url=db.storage.from("product-images").getPublicUrl(path).data.publicUrl;
+  const savedKB=Math.max(1,Math.round(optimizedFile.size/1024));
+  $("productMessage").textContent=`ছবি কমপ্রেস হয়েছে (${savedKB} KB)। পণ্য সেভ হচ্ছে...`;
+ }
  const row={name:fd.get("name").trim(),price:Number(fd.get("price")),stock:Number(fd.get("stock")),category:fd.get("category"),compatibility:fd.get("compatibility"),description:fd.get("description"),active:true};
  if(image_url)row.image_url=image_url;
  let q=id?db.from("products").update(row).eq("id",id):db.from("products").insert(row);
