@@ -83,19 +83,58 @@
       <form id="loginForm"><label>ইমেইল<input name="email" type="email" required></label><label>পাসওয়ার্ড<input name="password" type="password" required></label><button class="btn btn-red full">লগইন</button><p class="form-message" id="loginMessage"></p></form>
     </div>
     <div id="adminPanel" hidden>
-      <div class="admin-toolbar"><b>পণ্য ব্যবস্থাপনা</b><button class="btn btn-dark" id="logoutBtn">লগআউট</button></div>
-      <form id="productForm" class="admin-form">
-        <input type="hidden" name="id">
-        <label>পণ্যের নাম<input name="name" required></label>
-        <div class="form-two"><label>দাম (৳)<input name="price" type="number" min="0" required></label><label>স্টক<input name="stock" type="number" min="0" value="1" required></label></div>
-        <div class="form-two"><label>ক্যাটাগরি<select name="category" id="productCategory" required><option value="">ক্যাটাগরি লোড হচ্ছে...</option></select></label><label>বাইক মডেল<input name="compatibility" placeholder="যেমন: R15 V3"></label></div>
-        <label>বিবরণ<textarea name="description" rows="2"></textarea></label>
-        <label>পণ্যের ছবি<input name="image" type="file" accept="image/*"><small class="muted">ছবি না দিলে আগের ছবিই থাকবে।</small></label>
-        <div class="form-two"><button class="btn btn-red">সেভ করুন</button><button class="btn btn-outline" type="button" id="resetProduct">নতুন পণ্য</button></div>
-        <p class="form-message" id="productMessage"></p>
-      </form>
-      <section class="category-manager"><h4>ক্যাটাগরি ব্যবস্থাপনা</h4><form id="categoryForm" class="admin-form"><input type="hidden" name="old_name"><label>ক্যাটাগরির নাম<input name="name" required maxlength="50" placeholder="যেমন: Engine Parts"></label><div class="form-two"><button class="btn btn-red">ক্যাটাগরি সেভ করুন</button><button class="btn btn-outline" type="button" id="resetCategory">নতুন ক্যাটাগরি</button></div><p class="form-message" id="categoryMessage"></p></form><div id="adminCategories" class="admin-list"></div></section><h4>পণ্যের তালিকা</h4><div id="adminProducts" class="admin-list"></div>
-      <h4>সাম্প্রতিক অর্ডার</h4><div id="adminOrders" class="admin-list"></div>
+      <div class="dashboard-shell">
+        <aside class="admin-sidebar">
+          <div class="admin-brand"><span class="brand-mark">PM</span><div><b>PARTS MARKET</b><small>ADMIN CONTROL</small></div></div>
+          <div class="admin-user"><span class="admin-avatar">A</span><div><b>Administrator</b><small>Store manager</small></div></div>
+          <nav class="admin-nav" aria-label="Admin navigation">
+            <button class="admin-nav-link active" data-admin-tab="dashboard"><span>▦</span> ড্যাশবোর্ড</button>
+            <button class="admin-nav-link" data-admin-tab="products"><span>▣</span> পণ্য ব্যবস্থাপনা</button>
+            <button class="admin-nav-link" data-admin-tab="categories"><span>◈</span> ক্যাটাগরি</button>
+            <button class="admin-nav-link" data-admin-tab="orders"><span>▤</span> অর্ডার <i id="navPendingCount">0</i></button>
+            <button class="admin-nav-link" data-admin-tab="customers"><span>♙</span> কাস্টমার</button>
+            <button class="admin-nav-link" data-admin-tab="settings"><span>⚙</span> সেটিংস</button>
+          </nav>
+          <div class="admin-sidebar-bottom"><small>PARTS MARKET · ADMIN</small><button class="btn btn-outline full" id="logoutBtn">↪ লগআউট</button></div>
+        </aside>
+        <div class="admin-main">
+          <header class="admin-topbar"><div><p class="eyebrow">STORE MANAGEMENT</p><h2 id="adminPageTitle">ড্যাশবোর্ড</h2></div><div class="admin-top-actions"><span class="admin-live"><i></i> সংযুক্ত</span><button class="btn btn-dark" id="adminRefresh">↻ রিফ্রেশ</button><button class="admin-mobile-logout" id="mobileLogoutBtn" aria-label="লগআউট">↪</button></div></header>
+          <section class="admin-view active" data-admin-view="dashboard">
+            <div class="admin-welcome"><div><p class="eyebrow">WELCOME BACK</p><h3>আপনার স্টোরের সারসংক্ষেপ</h3><p>আজকের ব্যবসা ও অর্ডারের অবস্থা এক নজরে দেখুন।</p></div><span class="welcome-mark">PM</span></div>
+            <div class="stats-grid">
+              <article class="stat-card"><span class="stat-icon">▣</span><small>মোট পণ্য</small><b id="statProducts">০</b><em>স্টোরে থাকা পণ্য</em></article>
+              <article class="stat-card"><span class="stat-icon">◈</span><small>ক্যাটাগরি</small><b id="statCategories">০</b><em>সক্রিয় ক্যাটাগরি</em></article>
+              <article class="stat-card"><span class="stat-icon">▤</span><small>মোট অর্ডার</small><b id="statOrders">০</b><em>সকল অর্ডার</em></article>
+              <article class="stat-card stat-pending"><span class="stat-icon">◷</span><small>Pending Orders</small><b id="statPending">০</b><em>অ্যাকশন প্রয়োজন</em></article>
+              <article class="stat-card"><span class="stat-icon">৳</span><small>মোট অর্ডার মূল্য</small><b id="statRevenue">৳০</b><em>রেকর্ডকৃত অর্ডারের যোগফল</em></article>
+            </div>
+            <div class="admin-panel-card"><div class="admin-card-heading"><div><h3>সাম্প্রতিক অর্ডার</h3><p>সর্বশেষ ৫টি অর্ডার</p></div><button class="text-action" data-go-tab="orders">সব অর্ডার দেখুন →</button></div><div id="dashboardRecentOrders" class="admin-table-wrap"></div></div>
+            <div class="admin-quick-actions"><button data-go-tab="products">＋ নতুন পণ্য যোগ করুন</button><button data-go-tab="categories">＋ ক্যাটাগরি যোগ করুন</button><button data-go-tab="orders">অর্ডার পরিচালনা করুন →</button></div>
+          </section>
+          <section class="admin-view" data-admin-view="products">
+            <div class="admin-section-intro"><div><h3>পণ্য ব্যবস্থাপনা</h3><p>পণ্য যোগ, সম্পাদনা, স্টক ও তালিকা নিয়ন্ত্রণ করুন।</p></div><button class="btn btn-red" id="showProductForm">＋ নতুন পণ্য</button></div>
+            <form id="productForm" class="admin-form admin-editor" hidden><div class="admin-form-title"><b>পণ্যের তথ্য</b><button type="button" class="icon-btn" id="closeProductForm">✕</button></div><input type="hidden" name="id"><label>পণ্যের নাম<input name="name" required></label><div class="form-two"><label>দাম (৳)<input name="price" type="number" min="0" required></label><label>স্টক<input name="stock" type="number" min="0" value="1" required></label></div><div class="form-two"><label>ক্যাটাগরি<select name="category" id="productCategory" required><option value="">ক্যাটাগরি লোড হচ্ছে...</option></select></label><label>বাইক মডেল<input name="compatibility" placeholder="যেমন: R15 V3"></label></div><label>বিবরণ<textarea name="description" rows="2"></textarea></label><label>পণ্যের ছবি<input name="image" type="file" accept="image/*"><small class="muted">ছবি না দিলে আগের ছবিই থাকবে।</small></label><div class="form-two"><button class="btn btn-red">সেভ করুন</button><button class="btn btn-outline" type="button" id="resetProduct">নতুন পণ্য</button></div><p class="form-message" id="productMessage"></p></form>
+            <div class="admin-panel-card"><div class="admin-card-heading"><div><h3>সকল পণ্য</h3><p>সম্পাদনা বা মুছে ফেলতে পণ্য নির্বাচন করুন।</p></div><input class="admin-search" id="adminProductSearch" placeholder="পণ্য খুঁজুন..."></div><div id="adminProducts" class="admin-list"></div></div>
+          </section>
+          <section class="admin-view" data-admin-view="categories">
+            <div class="admin-section-intro"><div><h3>ক্যাটাগরি ব্যবস্থাপনা</h3><p>স্টোরের পণ্যের ক্যাটাগরি তৈরি ও সাজান।</p></div></div>
+            <div class="admin-two-col"><div class="admin-panel-card"><h3>নতুন ক্যাটাগরি</h3><p>ক্যাটাগরির নাম লিখে সেভ করুন।</p><form id="categoryForm" class="admin-form"><input type="hidden" name="old_name"><label>ক্যাটাগরির নাম<input name="name" required maxlength="50" placeholder="যেমন: Engine Parts"></label><div class="form-two"><button class="btn btn-red">ক্যাটাগরি সেভ করুন</button><button class="btn btn-outline" type="button" id="resetCategory">রিসেট</button></div><p class="form-message" id="categoryMessage"></p></form></div><div class="admin-panel-card"><div class="admin-card-heading"><div><h3>ক্যাটাগরির তালিকা</h3><p>নাম পরিবর্তন বা মুছে ফেলুন।</p></div><b class="admin-count" id="categoryTotal">০</b></div><div id="adminCategories" class="admin-list"></div></div></div>
+          </section>
+          <section class="admin-view" data-admin-view="orders">
+            <div class="admin-section-intro"><div><h3>অর্ডার ব্যবস্থাপনা</h3><p>প্রতিটি অর্ডারের বিস্তারিত দেখুন এবং ডেলিভারি স্ট্যাটাস আপডেট করুন।</p></div></div>
+            <div class="order-status-tabs"><button class="active" data-order-filter="all">সব <b id="countAll">0</b></button><button data-order-filter="pending">Pending <b id="countPending">0</b></button><button data-order-filter="confirmed">Confirmed <b id="countConfirmed">0</b></button><button data-order-filter="shipped">Shipped <b id="countShipped">0</b></button><button data-order-filter="delivered">Delivered <b id="countDelivered">0</b></button><button data-order-filter="cancelled">Cancelled <b id="countCancelled">0</b></button></div>
+            <div class="admin-panel-card"><div id="adminOrders" class="admin-list"></div></div>
+          </section>
+          <section class="admin-view" data-admin-view="customers">
+            <div class="admin-section-intro"><div><h3>কাস্টমার</h3><p>অর্ডার করা কাস্টমারদের যোগাযোগের তথ্য।</p></div></div>
+            <div class="admin-panel-card"><div class="admin-card-heading"><div><h3>কাস্টমার তালিকা</h3><p>অর্ডারের তথ্য থেকে সংগৃহীত।</p></div><input class="admin-search" id="adminCustomerSearch" placeholder="নাম বা ফোন খুঁজুন..."></div><div id="adminCustomers" class="admin-list"></div></div>
+          </section>
+          <section class="admin-view" data-admin-view="settings">
+            <div class="admin-section-intro"><div><h3>সেটিংস</h3><p>অ্যাডমিন অ্যাকাউন্ট ও স্টোর পরিচালনা।</p></div></div>
+            <div class="admin-panel-card settings-info"><h3>Admin Account</h3><p>বর্তমানে লগইন করা অ্যাকাউন্ট</p><b id="adminEmail">—</b><div class="settings-note">নিরাপত্তার জন্য Supabase Auth থেকেই অ্যাডমিন পাসওয়ার্ড পরিবর্তন করুন। Public website-এ কখনো Secret বা service_role key যোগ করবেন না।</div><button class="btn btn-outline" id="settingsLogout">লগআউট</button></div>
+          </section>
+        </div>
+      </div>
     </div>
   </section>
 
