@@ -5,3 +5,5 @@
 
 .logo-preview{min-height:125px;border:1px dashed #454b56;border-radius:10px;background:#0d1015;display:grid;place-items:center;color:#929ba8;margin:10px 0 16px;padding:14px}
 .logo-preview img{max-width:240px;max-height:110px;object-fit:contain}
+
+.gallery-uploader{margin:8px 0 14px}.gallery-uploader>label{margin-bottom:6px}.gallery-uploader>small{display:block;color:var(--muted);font-size:12px;margin-top:8px}.gallery-preview{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}.gallery-thumb{width:105px;background:#0d1015;border:1px solid var(--line);border-radius:9px;padding:6px}.gallery-thumb img{width:100%;height:82px;object-fit:cover;border-radius:6px}.gallery-thumb button{width:100%;margin-top:5px;background:#392027;color:#ffadb4;border:1px solid #66333d;border-radius:6px;padding:5px;font-size:11px}.gallery-note{color:var(--muted);font-size:12px;margin-top:8px}
