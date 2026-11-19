@@ -269,7 +269,17 @@ async function refreshAdmin(){
  renderAdminOrders();renderCustomers();$("adminEmail").textContent=currentUser?.email||"—";
 }
 
-function editProduct(p){const f=$("productForm");["id","name","price","stock","category","compatibility","description"].forEach(k=>f.elements[k].value=p[k]??"");f.elements.colors.value=(p.colors||[]).join(", ");$("productMessage").textContent="এডিট মোড";renderCategoryOptions(p.category)}
+function ensureProductColorField(){
+ const form=$("productForm");
+ if(!form||form.elements.colors)return;
+ const nameField=form.querySelector('[name="name"]');
+ if(!nameField)return;
+ const wrap=document.createElement("label");
+ wrap.style.cssText="display:block;margin:14px 0;padding:12px;border:2px solid #e63946;border-radius:9px;background:#24171b;color:#fff;font-weight:700";
+ wrap.innerHTML='🎨 পণ্যের কালার / রং<input name="colors" type="text" placeholder="যেমন: Black, Red, Blue" style="display:block;width:100%;margin-top:8px;padding:12px;background:#101318;color:#fff;border:1px solid #e63946;border-radius:7px"><small style="display:block;margin-top:7px;color:#ffd1d5;font-weight:400">একাধিক কালার হলে কমা দিয়ে আলাদা করুন। যেমন: Black, Red, Blue</small>';
+ nameField.parentElement.insertAdjacentElement("afterend",wrap);
+}
+function editProduct(p){ensureProductColorField();const f=$("productForm");["id","name","price","stock","category","compatibility","description"].forEach(k=>f.elements[k].value=p[k]??"");f.elements.colors.value=(p.colors||[]).join(", ");$("productMessage").textContent="এডিট মোড";renderCategoryOptions(p.category)}
 async function deleteProduct(id){if(!confirm("এই পণ্যটি মুছে ফেলতে চান?"))return;const {error}=await db.from("products").delete().eq("id",id);if(error)toast(error.message);else{toast("পণ্য মুছে ফেলা হয়েছে");await refreshAdmin();await loadProducts()}}
 async function optimizeProductImage(file){
  if(!file.type.startsWith("image/"))throw new Error("শুধু ছবির ফাইল আপলোড করুন।");
@@ -331,7 +341,7 @@ $("logoutBtn").onclick=async()=>{await db.auth.signOut();currentUser=null;await 
 $("productForm").onsubmit=saveProduct;$("categoryForm").onsubmit=saveCategory;
 $("resetCategory").onclick=()=>{$("categoryForm").reset();$("categoryForm").elements.old_name.value="";$("categoryMessage").textContent=""};
 $("resetProduct").onclick=()=>{$("productForm").reset();$("productForm").elements.id.value="";$("productMessage").textContent=""};
-$("showProductForm").onclick=()=>{$("productForm").hidden=false;$("productForm").scrollIntoView({behavior:"smooth",block:"start"})};
+$("showProductForm").onclick=()=>{ensureProductColorField();$("productForm").hidden=false;$("productForm").scrollIntoView({behavior:"smooth",block:"start"})};
 $("closeProductForm").onclick=()=>{$("productForm").hidden=true};
 $("adminRefresh").onclick=async()=>{await refreshAdmin();toast("ড্যাশবোর্ড আপডেট হয়েছে")};
 $("adminProductSearch").oninput=refreshAdmin;$("adminCustomerSearch").oninput=renderCustomers;
