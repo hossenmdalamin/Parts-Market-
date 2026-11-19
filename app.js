@@ -81,12 +81,9 @@ function renderProducts(){
  $("productCount").textContent=`${list.length}টি পণ্য`;
  $("productGrid").innerHTML=list.length?list.map(p=>{
   const colors=Array.isArray(p.colors)?p.colors:[];
-  const colorPicker=colors.length?`<label class="product-color-picker">কালার নির্বাচন করুন<select data-product-color="${esc(p.id)}" required><option value="">কালার বেছে নিন</option>${colors.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("")}</select></label>`:"";
-  return `<article class="product-card"><div class="product-image">${p.image_url||p.image?`<img src="${esc(p.image_url||p.image)}" alt="${esc(p.name)}" loading="lazy">`:'<span class="placeholder">⚙</span>'}<span class="stock-tag">${Number(p.stock)>0?"ইন স্টক":"স্টক আউট"}</span></div><div class="product-info"><small>${esc(p.category||"OTHER")}</small><h3>${esc(p.name)}</h3><p>${esc(p.compatibility||p.description||"")}</p>${colorPicker}<div class="product-bottom"><b class="price">${money(p.price)}</b><button class="add-btn" data-add="${esc(p.id)}" ${Number(p.stock)<1?"disabled":""}>কার্টে +</button></div></div></article>`;
+  return `<article class="product-card"><a class="product-card-link" href="./product.html?id=${encodeURIComponent(p.id)}" aria-label="${esc(p.name)} বিস্তারিত দেখুন"><div class="product-image">${p.image_url||p.image?`<img src="${esc(p.image_url||p.image)}" alt="${esc(p.name)}" loading="lazy">`:'<span class="placeholder">⚙</span>'}<span class="stock-tag">${Number(p.stock)>0?"ইন স্টক":"স্টক আউট"}</span></div><div class="product-info"><small>${esc(p.category||"OTHER")}</small><h3>${esc(p.name)}</h3><p>${esc(p.compatibility||p.description||"")}</p><div class="product-bottom"><b class="price">${money(p.price)}</b><span class="add-btn">View Details →</span></div></div></a></article>`;
  }).join(""):'<div class="empty">কোনো পণ্য পাওয়া যায়নি।</div>';
- document.querySelectorAll("[data-add]").forEach(b=>b.addEventListener("click",()=>{const select=document.querySelector(`[data-product-color="${CSS.escape(b.dataset.add)}"]`);if(select&&!select.value){toast("কার্টে যোগ করার আগে কালার নির্বাচন করুন");select.focus();return}addToCart(b.dataset.add,select?.value||"")}));
-}
-function cartKey(x){return String(x.id)+"::"+(x.color||"")}
+}function cartKey(x){return String(x.id)+"::"+(x.color||"")}
 function addToCart(id,color=""){
  const p=products.find(x=>String(x.id)===String(id));if(!p)return;
  const available=Array.isArray(p.colors)?p.colors:[];
@@ -362,4 +359,4 @@ async function loadStoreBranding(){
   const items=[["facebook_url","Facebook","f"],["youtube_url","YouTube","▶"],["tiktok_url","TikTok","♪"]];
   $("socialLinks").innerHTML=items.filter(([key])=>data[key]).map(([key,label,mark])=>'<a href="'+esc(data[key])+'" target="_blank" rel="noopener noreferrer" aria-label="'+label+'">'+mark+' '+label+'</a>').join("");
 }
-loadStoreBranding();
+loadStoreBranding();\nif(new URLSearchParams(location.search).get("cart")==="1"){openCart();history.replaceState({}, "", location.pathname)}
