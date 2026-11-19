@@ -188,3 +188,16 @@ document.querySelectorAll("[data-go-tab]").forEach(b=>b.onclick=()=>setAdminTab(
 document.querySelectorAll("[data-order-filter]").forEach(b=>b.onclick=()=>{adminOrderFilter=b.dataset.orderFilter;document.querySelectorAll("[data-order-filter]").forEach(x=>x.classList.toggle("active",x===b));renderAdminOrders()});
 $("settingsLogout").onclick=$("mobileLogoutBtn").onclick=$("logoutBtn").onclick=async()=>{await db.auth.signOut();currentUser=null;await updateAdminView()};
 $("year").textContent=new Date().getFullYear();renderCart();loadCategories().then(loadProducts);
+
+async function loadStoreBranding(){
+  if(!db)return;
+  const {data,error}=await db.from("store_settings").select("store_name,logo_url,facebook_url,youtube_url,tiktok_url").eq("id",1).maybeSingle();
+  if(error||!data)return;
+  const name=data.store_name||"PARTS MARKET";
+  $("siteBrandName").textContent=name;
+  document.title=name+" | Everything in One Place";
+  if(data.logo_url){$("siteLogo").src=data.logo_url;$("siteLogo").hidden=false;$("brandMark").hidden=true}
+  const items=[["facebook_url","Facebook","f"],["youtube_url","YouTube","▶"],["tiktok_url","TikTok","♪"]];
+  $("socialLinks").innerHTML=items.filter(([key])=>data[key]).map(([key,label,mark])=>'<a href="'+esc(data[key])+'" target="_blank" rel="noopener noreferrer" aria-label="'+label+'">'+mark+' '+label+'</a>').join("");
+}
+loadStoreBranding();
