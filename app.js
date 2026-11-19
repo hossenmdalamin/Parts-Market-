@@ -135,6 +135,7 @@ async function checkout(e) {
     p_note: customer.note,
     p_items: orderedItems.map(x => ({
       product_id: x.id,
+      selected_color: x.color || null,
       quantity: x.qty
     }))
   };
