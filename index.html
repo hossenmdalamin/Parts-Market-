@@ -69,6 +69,14 @@
       <label>সম্পূর্ণ নাম<input name="customer_name" required autocomplete="name"></label>
       <label>মোবাইল নম্বর<input name="phone" required inputmode="tel" placeholder="01XXXXXXXXX"></label>
       <label>সম্পূর্ণ ঠিকানা<textarea name="address" rows="3" required></textarea></label>
+      <label>ডেলিভারি এলাকা
+        <select name="delivery_area" required>
+          <option value="">এলাকা নির্বাচন করুন</option>
+          <option value="inside_dhaka">ঢাকা সিটির মধ্যে — ৳৮০</option>
+          <option value="outside_dhaka">ঢাকা সিটির বাইরে — ৳১৫০</option>
+        </select>
+      </label>
+      <p class="muted">ডেলিভারি চার্জ অর্ডারের মোট টাকার সঙ্গে যোগ হবে।</p>
       <label>নোট (ঐচ্ছিক)<textarea name="note" rows="2"></textarea></label>
       <div class="payment-note">পেমেন্ট পদ্ধতি: <b>Cash on Delivery</b></div>
       <button class="btn btn-red full" type="submit">অর্ডার কনফার্ম করুন</button>
