@@ -4,6 +4,7 @@ const supabaseReady = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.sup
 const db = supabaseReady ? window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY) : null;
 let appliedCoupon = {code:"", discount:0};
 let products = [], categories = [], cart = JSON.parse(localStorage.getItem("pm_cart") || "[]"), activeCategory = "সব", currentUser = null, wishlistIds = JSON.parse(localStorage.getItem("pm_wishlist") || "[]"), wishlistMode = false;
+let compareIds = JSON.parse(localStorage.getItem("pm_compare") || "[]").map(String).slice(0,3);
 
 const $ = (id) => document.getElementById(id);
 const money = (n) => "৳" + Number(n || 0).toLocaleString("en-BD");
@@ -119,6 +120,32 @@ function toggleWishlist(id){
  localStorage.setItem("pm_wishlist",JSON.stringify(wishlistIds));
  updateWishlistButton();renderProducts();
 }
+function toggleCompare(id){
+ const key=String(id);
+ if(compareIds.includes(key)) compareIds=compareIds.filter(x=>x!==key);
+ else if(compareIds.length>=3){toast("একসঙ্গে সর্বোচ্চ ৩টি পণ্য তুলনা করতে পারবেন");return}
+ else compareIds.push(key);
+ localStorage.setItem("pm_compare",JSON.stringify(compareIds));renderProducts();renderCompareTray();
+}
+function renderCompareTray(){
+ const tray=$("compareTray");if(!tray)return;
+ const chosen=compareIds.map(id=>products.find(p=>String(p.id)===id)).filter(Boolean);
+ tray.hidden=!chosen.length;$("compareTrayItems").textContent=chosen.map(p=>p.name).join(" · ");$("compareOpen").disabled=chosen.length<2;
+}
+function openCompare(){
+ const chosen=compareIds.map(id=>products.find(p=>String(p.id)===id)).filter(Boolean);
+ if(chosen.length<2){toast("তুলনা করতে অন্তত ২টি পণ্য নির্বাচন করুন");return}
+ const fields=[["পণ্যের নাম",p=>esc(p.name)],["দাম",p=>money(p.price)],["স্টক",p=>Number(p.stock)>0?"ইন স্টক":"স্টক আউট"],["বাইক মডেল",p=>esc(p.compatibility||"উল্লেখ নেই")],["ক্যাটাগরি",p=>esc(p.category||"উল্লেখ নেই")],["বিবরণ",p=>esc(p.description||"—")]];
+ $("compareTable").innerHTML="<table class=compare-table><tbody>"+fields.map(([label,render])=>"<tr><th>"+label+"</th>"+chosen.map(p=>"<td>"+render(p)+"</td>").join("")+"</tr>").join("")+"</tbody></table>";
+ $("compareModal").hidden=false;
+}
+function renderRecentlyViewed(){
+ const section=$("recentlyViewedSection");if(!section)return;
+ let ids=[];try{ids=JSON.parse(localStorage.getItem("pm_recently_viewed")||"[]").map(String)}catch{}
+ const recent=ids.map(id=>products.find(p=>String(p.id)===id)).filter(Boolean).slice(0,8);
+ section.hidden=!recent.length;
+ $("recentlyViewedGrid").innerHTML=recent.map(p=>"<a class=recent-product href=./product.html?id="+encodeURIComponent(p.id)+"><span class=recent-product-image>"+((p.image_url||p.image)?"<img src="+JSON.stringify(p.image_url||p.image)+" alt=\"\">":"⚙")+"</span><b>"+esc(p.name)+"</b><strong>"+money(p.price)+"</strong></a>").join("");
+}
 function updateWishlistButton(){
  const b=$("wishlistToggle");if(!b)return;
  $("wishlistCount").textContent=wishlistIds.length;
@@ -134,9 +161,11 @@ function renderProducts(){
  $("productCount").textContent=`${list.length}টি পণ্য`;
  $("productGrid").innerHTML=list.length?list.map(p=>{
   const saved=wishlistIds.includes(String(p.id));
-  return `<article class="product-card"><button type="button" class="wishlist-heart ${saved?"saved":""}" data-wishlist="${esc(p.id)}" aria-label="পছন্দের তালিকায় ${saved?"আছে":"যোগ করুন"}">${saved?"♥":"♡"}</button><a class="product-card-link" href="./product.html?id=${encodeURIComponent(p.id)}" aria-label="${esc(p.name)} বিস্তারিত দেখুন"><div class="product-image">${p.image_url||p.image?`<img src="${esc(p.image_url||p.image)}" alt="${esc(p.name)}" loading="lazy">`:'<span class="placeholder">⚙</span>'}<span class="stock-tag">${Number(p.stock)>0?"ইন স্টক":"স্টক আউট"}</span></div><div class="product-info"><small>${esc(p.category||"OTHER")}</small><h3>${esc(p.name)}</h3><p>${esc(p.compatibility||p.description||"")}</p><div class="product-bottom"><b class="price">${money(p.price)}</b><span class="add-btn">View Details →</span></div></div></a></article>`;
+  return `<article class="product-card"><button type="button" class="wishlist-heart ${saved?"saved":""}" data-wishlist="${esc(p.id)}" aria-label="পছন্দের তালিকায় ${saved?"আছে":"যোগ করুন"}">${saved?"♥":"♡"}</button><button type="button" class="compare-toggle ${compareIds.includes(String(p.id))?"selected":""}" data-compare="${esc(p.id)}">${compareIds.includes(String(p.id))?"✓ তুলনায় আছে":"+ তুলনা"}</button><a class="product-card-link" href="./product.html?id=${encodeURIComponent(p.id)}" aria-label="${esc(p.name)} বিস্তারিত দেখুন"><div class="product-image">${p.image_url||p.image?`<img src="${esc(p.image_url||p.image)}" alt="${esc(p.name)}" loading="lazy">`:'<span class="placeholder">⚙</span>'}<span class="stock-tag">${Number(p.stock)>0?"ইন স্টক":"স্টক আউট"}</span></div><div class="product-info"><small>${esc(p.category||"OTHER")}</small><h3>${esc(p.name)}</h3><p>${esc(p.compatibility||p.description||"")}</p><div class="product-bottom"><b class="price">${money(p.price)}</b><span class="add-btn">View Details →</span></div></div></a></article>`;
  }).join(""):'<div class="empty">কোনো পণ্য পাওয়া যায়নি।</div>';
  document.querySelectorAll("[data-wishlist]").forEach(b=>b.onclick=()=>toggleWishlist(b.dataset.wishlist));
+ document.querySelectorAll("[data-compare]").forEach(b=>b.onclick=()=>toggleCompare(b.dataset.compare));
+ renderCompareTray();renderRecentlyViewed();
  document.querySelectorAll(".product-image img").forEach(img=>img.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();openProductImageViewer(img.currentSrc||img.src,img.alt)}));
  updateWishlistButton();
 }function cartKey(x){return String(x.id)+"::"+(x.color||"")}
@@ -430,6 +459,7 @@ document.querySelectorAll("[data-admin-tab]").forEach(b=>b.onclick=()=>setAdminT
 document.querySelectorAll("[data-go-tab]").forEach(b=>b.onclick=()=>setAdminTab(b.dataset.goTab));
 document.querySelectorAll("[data-order-filter]").forEach(b=>b.onclick=()=>{adminOrderFilter=b.dataset.orderFilter;document.querySelectorAll("[data-order-filter]").forEach(x=>x.classList.toggle("active",x===b));renderAdminOrders()});
 $("settingsLogout").onclick=$("mobileLogoutBtn").onclick=$("logoutBtn").onclick=async()=>{await db.auth.signOut();currentUser=null;await updateAdminView()};
+$("compareOpen")?.addEventListener("click",openCompare);$("compareClose")?.addEventListener("click",()=>$("compareModal").hidden=true);$("compareModal")?.addEventListener("click",e=>{if(e.target===$("compareModal"))$("compareModal").hidden=true});$("compareClear")?.addEventListener("click",()=>{compareIds=[];localStorage.removeItem("pm_compare");renderProducts();renderCompareTray()});
 $("year").textContent=new Date().getFullYear();renderCart();renderCouponSummary();updateWishlistButton();loadCategories().then(loadProducts);
 
 async function loadStoreBranding(){
