@@ -100,16 +100,21 @@ async function deleteCategory(name){
    if(names.includes(activeCategory))activeCategory="সব";
    toast("ক্যাটাগরি মুছে ফেলা হয়েছে। পণ্য All Products-এ থাকবে।");await refreshCategoryManager();await loadProducts();
  }
+let bikeModelOptions=[];
 async function loadProducts(){
   $("productGrid").innerHTML='<div class="loading">পণ্য লোড হচ্ছে...</div>';
-  if(db){const {data,error}=await db.from("products").select("*").eq("active",true).order("created_at",{ascending:false});if(!error)products=data||[];else{console.error(error);products=[]}}
-  else products=fallbackProducts();
+  if(db){
+    const {data,error}=await db.from("products").select("*").eq("active",true).order("created_at",{ascending:false});
+    if(!error)products=data||[];else{console.error(error);products=[]}
+    const models=await db.from("bike_models").select("name").order("name");
+    bikeModelOptions=!models.error&&Array.isArray(models.data)&&models.data.length?models.data.map(x=>x.name):[...new Set(products.flatMap(p=>String(p.compatibility||"").split(/[,/|;]+/).map(x=>x.trim()).filter(Boolean)))];
+  }else{products=fallbackProducts();bikeModelOptions=[...new Set(products.flatMap(p=>String(p.compatibility||"").split(/[,/|;]+/).map(x=>x.trim()).filter(Boolean)))]}
   renderCompatibilityOptions();renderProducts();
 }
 function renderCompatibilityOptions(){
  const select=$("bikeFilter");if(!select)return;
  const current=select.value;
- const models=[...new Set(products.flatMap(p=>String(p.compatibility||"").split(/[,/|;]+/).map(x=>x.trim()).filter(Boolean)))].sort((a,b)=>a.localeCompare(b));
+ const models=[...new Set(bikeModelOptions)].sort((a,b)=>a.localeCompare(b));
  select.innerHTML='<option value="">সব বাইকের পার্টস</option>'+models.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
  if(models.includes(current))select.value=current;
 }
