@@ -41,7 +41,7 @@ function renderCategories(){
 }
 function renderCategoryOptions(selected=""){
   const select=$("productCategory");if(!select)return;
-  select.innerHTML=categories.map(c=>'<option value="'+esc(c.name)+'">'+(c.parent_name?esc(c.parent_name)+' / ':'')+esc(c.name)+'</option>').join("");
+  select.innerHTML='<option value="">ক্যাটাগরি নেই (Uncategorized)</option>'+categories.map(c=>'<option value="'+esc(c.name)+'">'+(c.parent_name?esc(c.parent_name)+' / ':'')+esc(c.name)+'</option>').join("");
   if(selected&&categories.some(c=>c.name===selected))select.value=selected;
 }
 function renderCategoryParentOptions(selected="",exclude=""){
@@ -86,18 +86,19 @@ async function saveCategory(e){
   f.reset();f.elements.old_name.value="";renderCategoryParentOptions();$("categoryMessage").textContent="ক্যাটাগরি সেভ হয়েছে";await refreshCategoryManager();await loadProducts();
 }
 async function deleteCategory(name){
-  if(!confirm('"'+name+'" ক্যাটাগরি মুছতে চান?'))return;
-  const {count,error:countError}=await db.from("products").select("id",{count:"exact",head:true}).eq("category",name);
-  if(countError){toast(countError.message);return}
-  if(count>0){toast("এই ক্যাটাগরিতে পণ্য আছে। আগে পণ্যগুলো অন্য ক্যাটাগরিতে সরান।");return}
-  const {count:childCount,error:childError}=await db.from("categories").select("name",{count:"exact",head:true}).eq("parent_name",name);
-  if(childError){toast(childError.message);return}
-  if(childCount>0){toast("আগে এই ক্যাটাগরির Sub-catalogue মুছে ফেলুন বা অন্য মূল ক্যাটাগরিতে সরান।");return}
-  const {error}=await db.from("categories").delete().eq("name",name);
-  if(error){toast(error.message);return}
-  if(activeCategory===name)activeCategory="সব";
-  toast("ক্যাটাগরি মুছে ফেলা হয়েছে");await refreshCategoryManager();
-}
+   const {data:children,error:childError}=await db.from("categories").select("name").eq("parent_name",name);
+   if(childError){toast(childError.message);return}
+   const childNames=(children||[]).map(c=>c.name),names=[name,...childNames];
+   const message=childNames.length?'"'+name+'" এবং এর '+childNames.length+'টি Sub-category মুছবেন? সংশ্লিষ্ট পণ্য Uncategorized হবে; কোনো পণ্য ডিলিট হবে না।':'"'+name+'" ক্যাটাগরি মুছবেন? সংশ্লিষ্ট পণ্য Uncategorized হবে; কোনো পণ্য ডিলিট হবে না।';
+   if(!confirm(message))return;
+   const {error:moveError}=await db.from("products").update({category:""}).in("category",names);
+   if(moveError){toast("পণ্যের ক্যাটাগরি খালি করা যায়নি: "+moveError.message);return}
+   if(childNames.length){const {error:childDeleteError}=await db.from("categories").delete().in("name",childNames);if(childDeleteError){toast("পণ্য Uncategorized হয়েছে, কিন্তু Sub-category মুছতে সমস্যা: "+childDeleteError.message);return}}
+   const {error}=await db.from("categories").delete().eq("name",name);
+   if(error){toast("পণ্য Uncategorized হয়েছে, কিন্তু ক্যাটাগরি মুছতে সমস্যা: "+error.message);return}
+   if(names.includes(activeCategory))activeCategory="সব";
+   toast("ক্যাটাগরি মুছে ফেলা হয়েছে। পণ্য All Products-এ থাকবে।");await refreshCategoryManager();await loadProducts();
+ }
 async function loadProducts(){
   $("productGrid").innerHTML='<div class="loading">পণ্য লোড হচ্ছে...</div>';
   if(db){const {data,error}=await db.from("products").select("*").eq("active",true).order("created_at",{ascending:false});if(!error)products=data||[];else{console.error(error);products=[]}}
