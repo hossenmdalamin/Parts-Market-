@@ -75,3 +75,7 @@
     padding: 7px;
   }
 }
+
+
+/* Hierarchical catalogue navigation */
+.category-group{display:flex;flex-direction:column;gap:7px;min-width:0}.subcategory-list{display:flex;flex-wrap:wrap;gap:6px;padding-left:8px}.subcategory-chip{border:1px solid var(--line);border-radius:20px;background:#171c24;color:#dce1e8;padding:6px 11px;font-size:12px;cursor:pointer}.subcategory-chip.active{border-color:#e63946;background:#2a171d;color:#ff9aa3}.category-grid>.category-tile{align-self:start}
