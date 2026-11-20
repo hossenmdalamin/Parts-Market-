@@ -14,16 +14,17 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=top-social-contact-20261120-1">
+  <link rel="stylesheet" href="./styles.css?v=premium-layout-v2-20261121-1">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./config.js"></script>
 </head>
 <body>
   <div class="topline">ঢাকাসহ সারা বাংলাদেশে ডেলিভারি • অর্ডার সহায়তা: 01954 191730</div>
   <header class="site-header">
-    <a class="brand" href="./" id="siteBrand"><span class="brand-mark" id="brandMark">PM</span><img class="brand-logo" id="siteLogo" alt="PARTS MARKET logo" hidden><span><b id="siteBrandName">PARTS MARKET</b><small>EVERYTHING IN ONE PLACE</small></span></a>
-    <div class="search-wrap"><input id="search" type="search" placeholder="পণ্যের নাম দিয়ে খুঁজুন..."><button id="searchBtn" aria-label="Search">⌕</button></div><div class="store-filters"><select id="bikeFilter" aria-label="বাইক মডেল অনুযায়ী ফিল্টার"><option value="">সব বাইকের পার্টস</option></select><button type="button" id="wishlistToggle" class="wishlist-toggle" aria-pressed="false">♡ পছন্দের পণ্য <span id="wishlistCount">0</span></button><button type="button" id="wishlistClear" class="wishlist-clear" hidden>তালিকা খালি করুন</button></div>
-    <nav><a href="#products">পণ্য</a><a href="#categories">ক্যাটাগরি</a><a href="./track.html">অর্ডার ট্র্যাক</a><button class="cart-open" id="cartOpen">কার্ট <span id="cartCount">0</span></button></nav>
+    <a class="brand" href="./" id="siteBrand"><span class="brand-mark" id="brandMark">PM</span><img class="brand-logo" id="siteLogo" alt="PARTS MARKET logo" hidden><span><b id="siteBrandName">PARTS MARKET</b><small>RIDE • UPGRADE • REPEAT</small></span></a>
+    <div class="search-wrap"><span class="search-symbol" aria-hidden="true">⌕</span><input id="search" type="search" placeholder="পার্টস, এক্সেসরিজ বা বাইক মডেল খুঁজুন..."><button id="searchBtn" aria-label="Search">খুঁজুন</button></div>
+    <div class="store-filters"><select id="bikeFilter" aria-label="বাইক মডেল অনুযায়ী ফিল্টার"><option value="">সব বাইকের পার্টস</option></select><button type="button" id="wishlistToggle" class="wishlist-toggle" aria-pressed="false">♡ পছন্দের পণ্য <span id="wishlistCount">0</span></button><button type="button" id="wishlistClear" class="wishlist-clear" hidden>তালিকা খালি করুন</button></div>
+    <nav aria-label="প্রধান নেভিগেশন"><a href="#products">শপ</a><a href="#categories">ক্যাটাগরি</a><a href="./track.html">অর্ডার ট্র্যাক</a><button class="cart-open" id="cartOpen"><span class="cart-word">কার্ট</span><span id="cartCount">0</span></button></nav>
   </header>
 
   <div class="top-contact-strip">
@@ -35,29 +36,36 @@
   </div>
 
   <main>
-    <section class="hero">
+    <section class="hero hero-premium">
       <div class="hero-copy">
-        <p class="eyebrow">BUILT FOR RIDERS</p>
-        <h1>আপনার বাইকের<br><em>পারফেক্ট আপগ্রেড</em></h1>
-        <p>স্পোর্টস বাইকের পার্টস, এক্সেসরিজ ও রাইডিং গিয়ার—সব এক জায়গায়।</p>
-        <a class="btn btn-red" href="#products">শপিং শুরু করুন <span>→</span></a>
+        <p class="hero-kicker"><span></span> BANGLADESH'S MOTORCYCLE PARTS STORE</p>
+        <h1>রাইড হবে আরও<br><em>প্রিমিয়াম।</em></h1>
+        <p class="hero-description">আপনার স্পোর্টস বাইকের জন্য বাছাইকৃত পার্টস, স্মার্ট এক্সেসরিজ আর রাইডিং এসেনশিয়াল—সব এক ঠিকানায়।</p>
+        <div class="hero-actions"><a class="btn btn-red" href="#products">কালেকশন দেখুন <span>→</span></a><a class="hero-secondary-link" href="#categories">ক্যাটাগরি এক্সপ্লোর করুন <span>↗</span></a></div>
+        <div class="hero-proof"><span><b>01</b> বাছাইকৃত পার্টস</span><i></i><span><b>02</b> দেশজুড়ে ডেলিভারি</span><i></i><span><b>03</b> সহজ অর্ডার</span></div>
       </div>
-      <div class="hero-art"><div class="speed-ring"></div><div class="hero-label">RIDE<br><b>BEYOND</b></div><div class="hero-stripe"></div></div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hero-visual-glow"></div><div class="hero-orbit hero-orbit-one"></div><div class="hero-orbit hero-orbit-two"></div>
+        <div class="hero-product-tile"><span class="tile-tag">RIDER'S CHOICE</span><div class="helmet-graphic"><span></span></div><div class="tile-caption"><small>PERFORMANCE SERIES</small><b>BUILT TO RIDE.</b></div></div>
+        <div class="hero-floating-card"><span class="floating-icon">✦</span><span><small>UPGRADE YOUR RIDE</small><b>Make every ride count.</b></span></div>
+        <div class="hero-vertical-label">PARTS MARKET / 2026</div>
+      </div>
+      <div class="hero-bottom-line"><span>PERFORMANCE</span><span>PRECISION</span><span>PASSION</span></div>
     </section>
 
-    <section class="benefits">
-      <div><b>✓</b><span>কোয়ালিটি পণ্য<small>বাছাইকৃত কালেকশন</small></span></div>
-      <div><b>↗</b><span>সারা দেশে ডেলিভারি<small>নিরাপদ প্যাকেজিং</small></span></div>
-      <div><b>৳</b><span>সহজ পেমেন্ট<small>ক্যাশ অন ডেলিভারি</small></span></div>
+    <section class="benefits benefits-premium" aria-label="স্টোরের সুবিধা">
+      <div><b>01</b><span>বাছাইকৃত কালেকশন<small>রাইডারদের প্রয়োজনীয় পণ্য</small></span><i>↗</i></div>
+      <div><b>02</b><span>সারা দেশে ডেলিভারি<small>নিরাপদ প্যাকেজিং ও পাঠানো</small></span><i>↗</i></div>
+      <div><b>03</b><span>সহজ অর্ডার<small>WhatsApp-এ সরাসরি সহায়তা</small></span><i>↗</i></div>
     </section>
 
     <section class="section" id="categories">
-      <div class="section-heading"><div><p class="eyebrow">EXPLORE COLLECTION</p><h2>ক্যাটাগরি</h2></div></div>
+      <div class="section-heading"><div><p class="eyebrow">FIND YOUR FIT</p><h2>ক্যাটাগরি অনুযায়ী খুঁজুন</h2><p class="section-subtitle">আপনার বাইকের প্রয়োজনীয় পার্টস এক নজরে বেছে নিন।</p></div><span class="section-side-note">EXPLORE / 01</span></div>
       <div class="category-grid" id="categoryGrid"><div class="loading">ক্যাটাগরি লোড হচ্ছে...</div></div>
     </section>
 
     <section class="section" id="products">
-      <div class="section-heading"><div><p class="eyebrow">THE PARTS MARKET EDIT</p><h2>জনপ্রিয় পণ্য</h2></div><span class="muted" id="productCount"></span></div>
+      <div class="section-heading product-heading"><div><p class="eyebrow">THE PARTS MARKET EDIT</p><h2>রাইডারদের পছন্দের পণ্য</h2><p class="section-subtitle">আপনার পরবর্তী আপগ্রেড শুরু হোক এখান থেকেই।</p></div><div class="product-heading-meta"><span class="section-side-note">SHOP / 02</span><span class="muted product-count-pill" id="productCount"></span></div></div>
       <div id="productGrid" class="product-grid"><div class="loading">পণ্য লোড হচ্ছে...</div></div>
     </section>
 
