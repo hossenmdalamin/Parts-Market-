@@ -173,7 +173,8 @@ async function checkout(e) {
     p_note: customer.note,
     p_delivery_area: customer.deliveryArea,
     p_delivery_fee: deliveryFee,
-    p_payment_last3: String(f.get("payment_last3") || "").trim(),\n    p_coupon_code: couponCode || null,
+    p_payment_last3: String(f.get("payment_last3") || "").trim(),
+    p_coupon_code: couponCode || null,
     p_items: orderedItems.map(x => ({
       product_id: x.id,
       selected_color: x.color || null,
