@@ -56,7 +56,10 @@
       <div id="productGrid" class="product-grid"><div class="loading">পণ্য লোড হচ্ছে...</div></div>
     </section>
 
+    <section class="section recent-section" id="recentlyViewedSection" hidden><div class="section-heading"><div><p class="eyebrow">YOUR BROWSING HISTORY</p><h2>সম্প্রতি দেখা পণ্য</h2></div></div><div id="recentlyViewedGrid" class="recently-viewed-grid"></div></section>
   </main>
+  <div id="compareTray" class="compare-tray" hidden><span>তুলনার জন্য: <b id="compareTrayItems"></b></span><button id="compareOpen" type="button" disabled>তুলনা দেখুন</button><button id="compareClear" type="button">✕</button></div>
+  <section id="compareModal" class="compare-modal" hidden><div class="compare-modal-card"><header><h2>পণ্যের তুলনা</h2><button id="compareClose" type="button">✕</button></header><div id="compareTable"></div></div></section>
 
   <footer><a class="brand" href="#"><span class="brand-mark">PM</span><span><b>PARTS MARKET</b><small>EVERYTHING IN ONE PLACE</small></span></a><p>© <span id="year"></span> PARTS MARKET. All rights reserved.</p></footer>
 
@@ -160,7 +163,7 @@
 
   <a class="admin-shortcut" id="adminOpen" href="./admin.html" title="Admin" aria-label="Admin">⚙</a>
   <div class="toast" id="toast"></div>
-  <script src="./app.js?v=category-accordion-20261120-1"></script>
+  <script src="./app.js?v=compare-recent-20261121-1"></script>
   <script>document.getElementById("adminOpen").onclick=()=>{window.location.href="./admin.html";};</script>
 </body>
 </html>
