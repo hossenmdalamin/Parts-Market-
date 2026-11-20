@@ -97,6 +97,7 @@ function updateWishlistButton(){
  b.classList.toggle("active",wishlistMode);
  b.innerHTML=(wishlistMode?"♥":"♡")+" পছন্দের পণ্য <span id=\"wishlistCount\">"+wishlistIds.length+"</span>";
 }
+function openProductImageViewer(src,alt="পণ্যের ছবি"){const old=document.getElementById("productImageViewer");if(old)old.remove();const viewer=document.createElement("div");viewer.id="productImageViewer";viewer.className="product-image-viewer";const close=document.createElement("button");close.type="button";close.className="product-image-viewer-close";close.textContent="✕";close.setAttribute("aria-label","ছবি বন্ধ করুন");const img=document.createElement("img");img.src=src;img.alt=alt;viewer.append(close,img);document.body.appendChild(viewer);document.body.style.overflow="hidden";const dismiss=()=>{viewer.remove();document.body.style.overflow="";document.removeEventListener("keydown",onKey)};const onKey=e=>{if(e.key==="Escape")dismiss()};close.onclick=dismiss;viewer.addEventListener("click",e=>{if(e.target===viewer)dismiss()});document.addEventListener("keydown",onKey)}
 function renderProducts(){
  const term=$("search").value.trim().toLowerCase(),bike=$("bikeFilter")?.value||"";
  const list=products.filter(p=>(activeCategory==="সব"||p.category===activeCategory)&&(!bike||String(p.compatibility||"").trim()===bike)&&(!wishlistMode||wishlistIds.includes(String(p.id)))&&(`${p.name} ${p.category} ${p.compatibility||""}`.toLowerCase().includes(term)));
