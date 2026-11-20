@@ -118,3 +118,34 @@
  .subcategory-card b{font-size:11px}
  .subcategory-card-icon{width:27px;height:27px;flex-basis:27px;font-size:12px}
 }
+
+/* Category UI: expandable accordion (Design 2) */
+.category-grid{display:block;max-width:900px;margin:0 auto}
+.category-accordion{display:grid;gap:9px}
+.category-accordion-item,.category-all-button{overflow:hidden;border:1px solid var(--line);border-radius:11px;background:var(--surface)}
+.category-accordion-trigger,.category-all-button{width:100%;min-height:58px;display:flex;align-items:center;gap:12px;padding:10px 15px;border:0;color:#edf0f4;background:transparent;text-align:left;cursor:pointer}
+.category-accordion-trigger b,.category-all-button b{flex:1;font-size:15px}
+.category-accordion-icon{width:36px;height:36px;flex:0 0 36px;display:grid;place-items:center;border-radius:9px;background:#302027;color:#ff7884;font-size:19px}
+.category-accordion-count{min-width:25px;padding:3px 7px;border-radius:20px;background:#252b34;color:#aeb6c2;text-align:center;font-size:11px}
+.category-accordion-chevron{width:25px;text-align:center;color:#ff8791;font-size:21px}
+.category-accordion-trigger:hover,.category-accordion-trigger.active,.category-accordion-item.expanded .category-accordion-trigger{background:#21191f}
+.category-accordion-item.expanded{border-color:#71313b}
+.category-accordion-panel{padding:5px 14px 13px 62px;border-top:1px solid #292f39;background:#151920}
+.category-subitem{width:100%;display:flex;align-items:center;gap:10px;padding:10px 11px;border:0;border-radius:7px;background:transparent;color:#d7dce4;text-align:left;cursor:pointer}
+.category-subitem span:nth-child(2){flex:1;font-size:13px}
+.category-subitem-marker{color:#ff7884;font-size:16px}
+.category-subitem-arrow{color:#8e98a6;font-size:19px}
+.category-subitem:hover,.category-subitem.active{background:#2b1b21;color:#ff9aa3}
+.category-accordion-empty{margin:5px 0;padding:9px;color:var(--muted);font-size:12px}
+.category-all-button{border:1px solid var(--line)}
+.category-all-button.active{border-color:#a73a48;background:#241a20}
+@media(max-width:650px){
+ .category-grid{max-width:none}
+ .category-accordion{gap:7px}
+ .category-accordion-trigger,.category-all-button{min-height:52px;padding:8px 10px;gap:9px}
+ .category-accordion-trigger b,.category-all-button b{font-size:13px}
+ .category-accordion-icon{width:31px;height:31px;flex-basis:31px;font-size:16px}
+ .category-accordion-panel{padding:4px 8px 9px 45px}
+ .category-subitem{padding:9px 7px;gap:7px}
+ .category-subitem span:nth-child(2){font-size:12px}
+}
