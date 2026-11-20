@@ -155,11 +155,11 @@
 .top-contact-strip{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;padding:10px clamp(14px,5vw,76px);background:#11151b;border-bottom:1px solid var(--line)}
 .top-whatsapp-link{display:inline-flex;align-items:center;gap:8px;padding:7px 13px;border:1px solid #236b48;border-radius:22px;background:#10251b;color:#a5f0bf;font-size:13px;font-weight:700;transition:.2s}
 .top-whatsapp-link:hover{background:#163b28;border-color:#2fa968}
-.top-whatsapp-link svg{width:19px;height:19px;fill:currentColor}
+.top-whatsapp-link svg{width:15px;height:15px;fill:currentColor}
 .top-social-links{gap:9px}
 .top-social-links .social-icon-link{width:31px;height:31px;display:grid;place-items:center;border:1px solid #343c48;border-radius:50%;background:#1a2029;color:#e8edf4;transition:.2s}
 .top-social-links .social-icon-link svg{width:16px;height:16px;fill:currentColor}
 .top-social-links .social-icon-link.facebook:hover{background:#1877f2;border-color:#1877f2;color:#fff}
 .top-social-links .social-icon-link.tiktok:hover{background:#111;border-color:#777;color:#fff}
 .top-social-links .social-icon-link.youtube:hover{background:#f00;border-color:#f00;color:#fff}
-@media(max-width:650px){.top-contact-strip{gap:11px;padding:8px 10px}.top-whatsapp-link{font-size:11px;padding:6px 10px}.top-whatsapp-link svg{width:17px;height:17px}.top-social-links{gap:7px}.top-social-links .social-icon-link{width:29px;height:29px}}
+@media(max-width:650px){.top-contact-strip{gap:11px;padding:8px 10px}.top-whatsapp-link{font-size:11px;padding:6px 10px}.top-whatsapp-link svg{width:15px;height:15px}.top-social-links{gap:7px}.top-social-links .social-icon-link{width:29px;height:29px}}
