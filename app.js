@@ -149,6 +149,11 @@ async function checkout(e) {
     $("checkoutMessage").textContent = "ডেলিভারি এলাকা নির্বাচন করুন।";
     return;
   }
+  const paymentLast3 = String(f.get("payment_last3") || "").trim();
+  if (!/^[0-9]{3}$/.test(paymentLast3)) {
+    $("checkoutMessage").textContent = "পেমেন্টের ট্রানজেকশনের শেষ ৩টি সংখ্যা লিখুন।";
+    return;
+  }
 
   const orderedItems = cart.map(x => ({ ...x }));
   const subtotal = orderedItems.reduce(
@@ -163,6 +168,7 @@ async function checkout(e) {
     p_note: customer.note,
     p_delivery_area: customer.deliveryArea,
     p_delivery_fee: deliveryFee,
+    p_payment_last3: String(f.get("payment_last3") || "").trim(),
     p_items: orderedItems.map(x => ({
       product_id: x.id,
       selected_color: x.color || null,
@@ -202,13 +208,19 @@ Address: ${customer.address}
 ORDER DETAILS:
 ${itemText}
 
-পণ্যের মূল্য: ${money(subtotal)}\nডেলিভারি চার্জ: ${money(deliveryFee)}\nসর্বমোট: ${money(total)}
+পণ্যের মূল্য: ${money(subtotal)}
+অগ্রিম কুরিয়ার চার্জ: ${money(deliveryFee)}
+পণ্য হাতে পেয়ে COD পরিশোধ: ${money(subtotal)}
+সর্বমোট অর্ডার মূল্য: ${money(total)}
+পেমেন্ট মাধ্যম: বিকাশ মার্চেন্ট / নগদ পার্সোনাল
+ট্রানজেকশনের শেষ ৩ সংখ্যা: ${paymentLast3}
+পেমেন্ট স্ক্রিনশট: এই WhatsApp চ্যাটে সংযুক্ত করে পাঠাবেন।
 
 Customer Note: ${customer.note || "নেই"}
 
-Order Status: Pending
+Order Status: Pending — অগ্রিম পেমেন্ট যাচাই বাকি
 
-অর্ডারটি গ্রহণ করার জন্য ধন্যবাদ।
+অর্ডার নিশ্চিত হওয়ার পর ৭২ ঘণ্টার মধ্যে ডেলিভারি (ইনশাআল্লাহ)।
 - Parts Market`;
 
   const whatsappURL =
@@ -229,7 +241,7 @@ Order Status: Pending
   // Show instruction
   const instruction = document.createElement("p");
   instruction.textContent =
-    "আপনার অর্ডারটি নিশ্চিত করতে WhatsApp-এর মাধ্যমে অর্ডারের বিস্তারিত তথ্য আমাদের কাছে পাঠিয়ে দিন। WhatsApp-এ মেসেজ পাঠানোর পরই আপনার অর্ডার কনফার্ম হবে।";
+    "অর্ডারটি এখন Pending। WhatsApp-এ অর্ডারের মেসেজ পাঠিয়ে ডেলিভারি চার্জের পেমেন্ট স্ক্রিনশট সংযুক্ত করুন। পেমেন্ট যাচাইয়ের পর আমরা অর্ডার Confirmed করব।";
 
   instruction.style.cssText =
     "margin:12px 0;padding:12px;background:#e8f7ed;color:#176b35;border-radius:10px;line-height:1.7;";
