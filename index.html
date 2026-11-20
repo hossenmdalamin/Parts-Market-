@@ -3,7 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#101114">
+  <meta name="theme-color" content="#101114">\n  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Parts Market">
   <meta name="description" content="PARTS MARKET — Everything in One Place. Sports bike parts and accessories.">
   <title>PARTS MARKET | Everything in One Place</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -165,5 +169,13 @@
   <div class="toast" id="toast"></div>
   <script src="./app.js?v=bike-model-filter-20261120-1"></script>
   <script>document.getElementById("adminOpen").onclick=()=>{window.location.href="./admin.html";};</script>
+
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js").catch((error) => console.error("PWA service worker registration failed:", error));
+    });
+  }
+</script>
 </body>
 </html>
