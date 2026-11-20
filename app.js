@@ -109,7 +109,7 @@ async function loadProducts(){
 function renderCompatibilityOptions(){
  const select=$("bikeFilter");if(!select)return;
  const current=select.value;
- const models=[...new Set(products.map(p=>String(p.compatibility||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+ const models=[...new Set(products.flatMap(p=>String(p.compatibility||"").split(/[,/|;]+/).map(x=>x.trim()).filter(Boolean)))].sort((a,b)=>a.localeCompare(b));
  select.innerHTML='<option value="">সব বাইকের পার্টস</option>'+models.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
  if(models.includes(current))select.value=current;
 }
@@ -120,6 +120,7 @@ function toggleWishlist(id){
  localStorage.setItem("pm_wishlist",JSON.stringify(wishlistIds));
  updateWishlistButton();renderProducts();
 }
+function clearWishlist(){if(!wishlistIds.length)return;if(!confirm("সব পছন্দের পণ্য তালিকা থেকে সরাবেন?"))return;wishlistIds=[];localStorage.removeItem("pm_wishlist");wishlistMode=false;updateWishlistButton();renderProducts();toast("পছন্দের তালিকা খালি করা হয়েছে");}
 function toggleCompare(id){
  const key=String(id);
  if(compareIds.includes(key)) compareIds=compareIds.filter(x=>x!==key);
@@ -152,12 +153,13 @@ function updateWishlistButton(){
  b.setAttribute("aria-pressed",String(wishlistMode));
  b.classList.toggle("active",wishlistMode);
  b.innerHTML=(wishlistMode?"♥":"♡")+" পছন্দের পণ্য <span id=\"wishlistCount\">"+wishlistIds.length+"</span>";
+ const clear=$("wishlistClear");if(clear)clear.hidden=!wishlistMode||!wishlistIds.length;
 }
 function openProductImageViewer(src,alt="পণ্যের ছবি"){const old=document.getElementById("productImageViewer");if(old)old.remove();const viewer=document.createElement("div");viewer.id="productImageViewer";viewer.className="product-image-viewer";const close=document.createElement("button");close.type="button";close.className="product-image-viewer-close";close.textContent="✕";close.setAttribute("aria-label","ছবি বন্ধ করুন");const img=document.createElement("img");img.src=src;img.alt=alt;viewer.append(close,img);document.body.appendChild(viewer);document.body.style.overflow="hidden";const dismiss=()=>{viewer.remove();document.body.style.overflow="";document.removeEventListener("keydown",onKey)};const onKey=e=>{if(e.key==="Escape")dismiss()};close.onclick=dismiss;viewer.addEventListener("click",e=>{if(e.target===viewer)dismiss()});document.addEventListener("keydown",onKey)}
 function renderProducts(){
  const term=$("search").value.trim().toLowerCase(),bike=$("bikeFilter")?.value||"";
  const selectedCategories=activeCategory==="সব"?null:[activeCategory,...categories.filter(c=>c.parent_name===activeCategory).map(c=>c.name)];
- const list=products.filter(p=>(!selectedCategories||selectedCategories.includes(p.category))&&(!bike||String(p.compatibility||"").trim()===bike)&&(!wishlistMode||wishlistIds.includes(String(p.id)))&&(`${p.name} ${p.category} ${p.compatibility||""}`.toLowerCase().includes(term)));
+ const list=products.filter(p=>(!selectedCategories||selectedCategories.includes(p.category))&&(!bike||String(p.compatibility||"").split(/[,/|;]+/).some(x=>x.trim().toLowerCase()===bike.toLowerCase()))&&(!wishlistMode||wishlistIds.includes(String(p.id)))&&(`${p.name} ${p.category} ${p.compatibility||""}`.toLowerCase().includes(term)));
  $("productCount").textContent=`${list.length}টি পণ্য`;
  $("productGrid").innerHTML=list.length?list.map(p=>{
   const saved=wishlistIds.includes(String(p.id));
@@ -459,7 +461,7 @@ document.querySelectorAll("[data-admin-tab]").forEach(b=>b.onclick=()=>setAdminT
 document.querySelectorAll("[data-go-tab]").forEach(b=>b.onclick=()=>setAdminTab(b.dataset.goTab));
 document.querySelectorAll("[data-order-filter]").forEach(b=>b.onclick=()=>{adminOrderFilter=b.dataset.orderFilter;document.querySelectorAll("[data-order-filter]").forEach(x=>x.classList.toggle("active",x===b));renderAdminOrders()});
 $("settingsLogout").onclick=$("mobileLogoutBtn").onclick=$("logoutBtn").onclick=async()=>{await db.auth.signOut();currentUser=null;await updateAdminView()};
-$("compareOpen")?.addEventListener("click",openCompare);$("compareClose")?.addEventListener("click",()=>$("compareModal").hidden=true);$("compareModal")?.addEventListener("click",e=>{if(e.target===$("compareModal"))$("compareModal").hidden=true});$("compareClear")?.addEventListener("click",()=>{compareIds=[];localStorage.removeItem("pm_compare");renderProducts();renderCompareTray()});
+$("wishlistClear")?.addEventListener("click",clearWishlist);$("compareOpen")?.addEventListener("click",openCompare);$("compareClose")?.addEventListener("click",()=>$("compareModal").hidden=true);$("compareModal")?.addEventListener("click",e=>{if(e.target===$("compareModal"))$("compareModal").hidden=true});$("compareClear")?.addEventListener("click",()=>{compareIds=[];localStorage.removeItem("pm_compare");renderProducts();renderCompareTray()});
 $("year").textContent=new Date().getFullYear();renderCart();renderCouponSummary();updateWishlistButton();loadCategories().then(loadProducts);
 
 async function loadStoreBranding(){
