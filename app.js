@@ -2,7 +2,7 @@
 const CFG = window.PM_CONFIG || {};
 const supabaseReady = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 const db = supabaseReady ? window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY) : null;
-let products = [], categories = [], cart = JSON.parse(localStorage.getItem("pm_cart") || "[]"), activeCategory = "সব", currentUser = null;
+let products = [], categories = [], cart = JSON.parse(localStorage.getItem("pm_cart") || "[]"), activeCategory = "সব", currentUser = null, wishlistIds = JSON.parse(localStorage.getItem("pm_wishlist") || "[]"), wishlistMode = false;
 
 const $ = (id) => document.getElementById(id);
 const money = (n) => "৳" + Number(n || 0).toLocaleString("en-BD");
@@ -73,16 +73,39 @@ async function loadProducts(){
   $("productGrid").innerHTML='<div class="loading">পণ্য লোড হচ্ছে...</div>';
   if(db){const {data,error}=await db.from("products").select("*").eq("active",true).order("created_at",{ascending:false});if(!error)products=data||[];else{console.error(error);products=[]}}
   else products=fallbackProducts();
-  renderProducts();
+  renderCompatibilityOptions();renderProducts();
+}
+function renderCompatibilityOptions(){
+ const select=$("bikeFilter");if(!select)return;
+ const current=select.value;
+ const models=[...new Set(products.map(p=>String(p.compatibility||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+ select.innerHTML='<option value="">সব বাইকের পার্টস</option>'+models.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
+ if(models.includes(current))select.value=current;
+}
+function toggleWishlist(id){
+ const key=String(id);
+ wishlistIds=wishlistIds.map(String);
+ wishlistIds=wishlistIds.includes(key)?wishlistIds.filter(x=>x!==key):[...wishlistIds,key];
+ localStorage.setItem("pm_wishlist",JSON.stringify(wishlistIds));
+ updateWishlistButton();renderProducts();
+}
+function updateWishlistButton(){
+ const b=$("wishlistToggle");if(!b)return;
+ $("wishlistCount").textContent=wishlistIds.length;
+ b.setAttribute("aria-pressed",String(wishlistMode));
+ b.classList.toggle("active",wishlistMode);
+ b.innerHTML=(wishlistMode?"♥":"♡")+" পছন্দের পণ্য <span id=\"wishlistCount\">"+wishlistIds.length+"</span>";
 }
 function renderProducts(){
- const term=$("search").value.trim().toLowerCase();
- const list=products.filter(p=>(activeCategory==="সব"||p.category===activeCategory)&&(`${p.name} ${p.category} ${p.compatibility||""}`.toLowerCase().includes(term)));
+ const term=$("search").value.trim().toLowerCase(),bike=$("bikeFilter")?.value||"";
+ const list=products.filter(p=>(activeCategory==="সব"||p.category===activeCategory)&&(!bike||String(p.compatibility||"").trim()===bike)&&(!wishlistMode||wishlistIds.includes(String(p.id)))&&(`${p.name} ${p.category} ${p.compatibility||""}`.toLowerCase().includes(term)));
  $("productCount").textContent=`${list.length}টি পণ্য`;
  $("productGrid").innerHTML=list.length?list.map(p=>{
-  const colors=Array.isArray(p.colors)?p.colors:[];
-  return `<article class="product-card"><a class="product-card-link" href="./product.html?id=${encodeURIComponent(p.id)}" aria-label="${esc(p.name)} বিস্তারিত দেখুন"><div class="product-image">${p.image_url||p.image?`<img src="${esc(p.image_url||p.image)}" alt="${esc(p.name)}" loading="lazy">`:'<span class="placeholder">⚙</span>'}<span class="stock-tag">${Number(p.stock)>0?"ইন স্টক":"স্টক আউট"}</span></div><div class="product-info"><small>${esc(p.category||"OTHER")}</small><h3>${esc(p.name)}</h3><p>${esc(p.compatibility||p.description||"")}</p><div class="product-bottom"><b class="price">${money(p.price)}</b><span class="add-btn">View Details →</span></div></div></a></article>`;
+  const saved=wishlistIds.includes(String(p.id));
+  return `<article class="product-card"><button type="button" class="wishlist-heart ${saved?"saved":""}" data-wishlist="${esc(p.id)}" aria-label="পছন্দের তালিকায় ${saved?"আছে":"যোগ করুন"}">${saved?"♥":"♡"}</button><a class="product-card-link" href="./product.html?id=${encodeURIComponent(p.id)}" aria-label="${esc(p.name)} বিস্তারিত দেখুন"><div class="product-image">${p.image_url||p.image?`<img src="${esc(p.image_url||p.image)}" alt="${esc(p.name)}" loading="lazy">`:'<span class="placeholder">⚙</span>'}<span class="stock-tag">${Number(p.stock)>0?"ইন স্টক":"স্টক আউট"}</span></div><div class="product-info"><small>${esc(p.category||"OTHER")}</small><h3>${esc(p.name)}</h3><p>${esc(p.compatibility||p.description||"")}</p><div class="product-bottom"><b class="price">${money(p.price)}</b><span class="add-btn">View Details →</span></div></div></a></article>`;
  }).join(""):'<div class="empty">কোনো পণ্য পাওয়া যায়নি।</div>';
+ document.querySelectorAll("[data-wishlist]").forEach(b=>b.onclick=()=>toggleWishlist(b.dataset.wishlist));
+ updateWishlistButton();
 }function cartKey(x){return String(x.id)+"::"+(x.color||"")}
 function addToCart(id,color=""){
  const p=products.find(x=>String(x.id)===String(id));if(!p)return;
@@ -327,7 +350,7 @@ async function updateAdminView(){
  if(error||profile?.role!=="admin"){await db.auth.signOut();currentUser=null;$("loginMessage").textContent="এই অ্যাকাউন্টে অ্যাডমিন অনুমতি নেই।";$("adminAuth").hidden=false;$("adminPanel").hidden=true;return}
  $("adminAuth").hidden=true;$("adminPanel").hidden=false;setAdminTab("dashboard");await refreshAdmin();
 }
-$("search").addEventListener("input",renderProducts);$("searchBtn").onclick=renderProducts;
+$("search").addEventListener("input",renderProducts);$("searchBtn").onclick=renderProducts;$("bikeFilter")?.addEventListener("change",renderProducts);$("wishlistToggle")?.addEventListener("click",()=>{wishlistMode=!wishlistMode;updateWishlistButton();renderProducts();$("products").scrollIntoView({behavior:"smooth"})});
 document.querySelectorAll("[data-category]").forEach(b=>b.onclick=()=>{activeCategory=b.dataset.category;document.querySelectorAll("[data-category]").forEach(x=>x.classList.toggle("active",x===b));renderProducts()});
 $("cartOpen").onclick=openCart;$("cartClose").onclick=closeCart;$("overlay").onclick=()=>{closeCart();document.querySelectorAll(".modal.show").forEach(m=>hideModal(m.id))};
 $("checkoutOpen").onclick=()=>{if(!cart.length){toast("কার্ট খালি");return}showModal("checkoutModal")};
@@ -346,7 +369,7 @@ document.querySelectorAll("[data-admin-tab]").forEach(b=>b.onclick=()=>setAdminT
 document.querySelectorAll("[data-go-tab]").forEach(b=>b.onclick=()=>setAdminTab(b.dataset.goTab));
 document.querySelectorAll("[data-order-filter]").forEach(b=>b.onclick=()=>{adminOrderFilter=b.dataset.orderFilter;document.querySelectorAll("[data-order-filter]").forEach(x=>x.classList.toggle("active",x===b));renderAdminOrders()});
 $("settingsLogout").onclick=$("mobileLogoutBtn").onclick=$("logoutBtn").onclick=async()=>{await db.auth.signOut();currentUser=null;await updateAdminView()};
-$("year").textContent=new Date().getFullYear();renderCart();loadCategories().then(loadProducts);
+$("year").textContent=new Date().getFullYear();renderCart();updateWishlistButton();loadCategories().then(loadProducts);
 
 async function loadStoreBranding(){
   if(!db)return;
