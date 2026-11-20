@@ -139,20 +139,30 @@ async function checkout(e) {
     name: f.get("customer_name").trim(),
     phone: f.get("phone").trim(),
     address: f.get("address").trim(),
-    note: f.get("note").trim()
+    note: f.get("note").trim(),
+    deliveryArea: f.get("delivery_area")
   };
 
-  // Save cart details before clearing it
+  const deliveryFee = customer.deliveryArea === "inside_dhaka" ? 80 :
+    customer.deliveryArea === "outside_dhaka" ? 150 : null;
+  if (deliveryFee === null) {
+    $("checkoutMessage").textContent = "ডেলিভারি এলাকা নির্বাচন করুন।";
+    return;
+  }
+
   const orderedItems = cart.map(x => ({ ...x }));
-  const total = orderedItems.reduce(
+  const subtotal = orderedItems.reduce(
     (sum, x) => sum + x.price * x.qty, 0
   );
+  const total = subtotal + deliveryFee;
 
   const payload = {
     p_customer_name: customer.name,
     p_phone: customer.phone,
     p_address: customer.address,
     p_note: customer.note,
+    p_delivery_area: customer.deliveryArea,
+    p_delivery_fee: deliveryFee,
     p_items: orderedItems.map(x => ({
       product_id: x.id,
       selected_color: x.color || null,
@@ -192,7 +202,7 @@ Address: ${customer.address}
 ORDER DETAILS:
 ${itemText}
 
-Total Amount: ${money(total)}
+পণ্যের মূল্য: ${money(subtotal)}\nডেলিভারি চার্জ: ${money(deliveryFee)}\nসর্বমোট: ${money(total)}
 
 Customer Note: ${customer.note || "নেই"}
 
