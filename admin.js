@@ -2,7 +2,7 @@ const CFG=window.PM_CONFIG||{},db=window.supabase?.createClient(CFG.SUPABASE_URL
 if(action==='book'&&!confirm('এই অর্ডারটি এখন Steadfast-এ বুক করবেন? এটি বাস্তব কুরিয়ার বুকিং তৈরি করবে।'))return;
 const original=button.textContent;button.disabled=true;button.textContent=action==='book'?'Steadfast-এ বুক হচ্ছে...':'স্ট্যাটাস আনা হচ্ছে...';
 try{
-const {data,error}=await db.functions.invoke('steadfast-integration',{body:{action,order_id:id}});
+const {data,error}=await db.functions.invoke('Steadfast_integration',{body:{action,order_id:id}});
 if(error){let detail=error.message||'Function request failed';try{const body=await error.context.json();detail=body.error||body.message||detail}catch{}throw new Error(detail)}
 if(!data?.success)throw new Error(data?.error||'Steadfast request failed');
 toast(action==='book'?'Steadfast বুকিং সফল হয়েছে। Consignment ID: '+data.consignment_id:'Steadfast স্ট্যাটাস আপডেট হয়েছে: '+data.delivery_status);
