@@ -511,3 +511,27 @@ footer{margin-top:20px}
 .category-all-icon{flex:0 0 52px;width:52px;height:52px;display:grid;place-items:center;border-radius:12px;background:#3a2028;color:#ff7783;font-size:28px}
 @media(max-width:900px){.category-accordion{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.category-accordion{grid-template-columns:1fr;gap:10px}.category-accordion-trigger,.category-all-button{min-height:88px;padding:10px}.category-card-visual{flex-basis:64px;width:64px;height:64px}.category-accordion-panel{padding-left:86px}.category-card-copy b,.category-all-button b{font-size:14px}}
+
+
+/* Compact category cards: remove decorative icons and tighten spacing */
+.category-accordion{gap:7px}
+.category-accordion-item{border-radius:10px}
+.category-accordion-trigger{min-height:0!important;padding:8px 10px!important;gap:9px!important}
+.category-card-visual{display:none!important}
+.category-card-copy{gap:1px!important}
+.category-card-copy b{font-size:13px!important;line-height:1.35!important;font-weight:600!important}
+.category-card-copy small{font-size:10px!important;line-height:1.35!important}
+.category-accordion-chevron{font-size:17px!important}
+.category-accordion-panel{padding:5px 9px 8px!important;gap:5px!important}
+.category-subitem{min-height:0!important;padding:6px 9px!important;font-size:11px!important;border-radius:7px!important}
+.category-subitem-arrow{font-size:15px!important}
+.category-all-button{min-height:0!important;padding:8px 10px!important;font-size:12px!important}
+.category-all-icon,.category-subitem-marker,.category-card-fallback{display:none!important}
+@media(max-width:650px){
+ .category-accordion{gap:6px}
+ .category-accordion-trigger{padding:7px 9px!important;gap:7px!important}
+ .category-card-copy b{font-size:12px!important}
+ .category-card-copy small{font-size:9px!important}
+ .category-subitem{padding:6px 8px!important;font-size:10px!important}
+ .category-all-button{padding:7px 9px!important;font-size:11px!important}
+}
