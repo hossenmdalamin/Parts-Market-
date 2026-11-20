@@ -2,7 +2,8 @@
 const CFG = window.PM_CONFIG || {};
 const supabaseReady = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 const db = supabaseReady ? window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY) : null;
-let appliedCoupon = {code:"", discount:0};\nlet products = [], categories = [], cart = JSON.parse(localStorage.getItem("pm_cart") || "[]"), activeCategory = "সব", currentUser = null, wishlistIds = JSON.parse(localStorage.getItem("pm_wishlist") || "[]"), wishlistMode = false;
+let appliedCoupon = {code:"", discount:0};
+let products = [], categories = [], cart = JSON.parse(localStorage.getItem("pm_cart") || "[]"), activeCategory = "সব", currentUser = null, wishlistIds = JSON.parse(localStorage.getItem("pm_wishlist") || "[]"), wishlistMode = false;
 
 const $ = (id) => document.getElementById(id);
 const money = (n) => "৳" + Number(n || 0).toLocaleString("en-BD");
@@ -161,7 +162,9 @@ async function checkout(e) {
   const subtotal = orderedItems.reduce(
     (sum, x) => sum + x.price * x.qty, 0
   );
-  const couponCode = appliedCoupon.code || "";\n  const discount = couponCode ? Math.min(appliedCoupon.discount, subtotal) : 0;\n  const total = subtotal - discount + deliveryFee;
+  const couponCode = appliedCoupon.code || "";
+  const discount = couponCode ? Math.min(appliedCoupon.discount, subtotal) : 0;
+  const total = subtotal - discount + deliveryFee;
 
   const payload = {
     p_customer_name: customer.name,
