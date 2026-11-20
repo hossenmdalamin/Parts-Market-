@@ -29,12 +29,14 @@ async function loadCategories(){
 function renderCategories(){
   const grid=$("categoryGrid");if(!grid)return;
   const roots=categories.filter(c=>!c.parent_name);
-  const tiles=roots.map((c,i)=>{
-    const children=categories.filter(x=>x.parent_name===c.name);
-    return '<div class="category-group"><button class="category-tile '+(activeCategory===c.name?"active":"")+'" data-category="'+esc(c.name)+'"><span>'+(["◉","⌁","✦","☼","⚙"][i%5])+'</span><b>'+esc(c.name)+'</b></button>'+
-      (children.length?'<div class="subcategory-list">'+children.map(ch=>'<button class="subcategory-chip '+(activeCategory===ch.name?"active":"")+'" data-category="'+esc(ch.name)+'">'+esc(ch.name)+'</button>').join("")+'</div>':'')+'</div>';
-  }).join("");
-  grid.innerHTML='<button class="category-tile '+(activeCategory==="সব"?"active":"")+'" data-category="সব"><span>⚙</span><b>সব পণ্য</b></button>'+tiles;
+  if(!window.activeRootCategory||!roots.some(c=>c.name===window.activeRootCategory))window.activeRootCategory=roots[0]?.name||"";
+  const selectedRoot=roots.find(c=>c.name===window.activeRootCategory);
+  const children=selectedRoot?categories.filter(c=>c.parent_name===selectedRoot.name):[];
+  const sidebar='<aside class="category-sidebar"><button class="category-side-item '+(activeCategory==="সব"?"active":"")+'" data-category="সব"><span class="category-side-icon">⌂</span><span>সব পণ্য</span></button>'+roots.map((c,i)=>'<button class="category-side-item '+(window.activeRootCategory===c.name?"selected":"")+'" data-root-category="'+esc(c.name)+'"><span class="category-side-icon">'+(["◉","⌁","✦","☼","⚙"][i%5])+'</span><span>'+esc(c.name)+'</span><span class="category-side-arrow">›</span></button>').join("")+'</aside>';
+  const subgrid=children.length?'<div class="subcategory-grid">'+children.map(ch=>'<button class="subcategory-card '+(activeCategory===ch.name?"active":"")+'" data-category="'+esc(ch.name)+'"><span class="subcategory-card-icon">⚙</span><b>'+esc(ch.name)+'</b><span class="subcategory-card-arrow">→</span></button>').join("")+'</div>':'<div class="category-empty">এই ক্যাটাগরিতে এখনো কোনো সাব-ক্যাটাগরি যোগ করা হয়নি।</div>';
+  const content='<div class="category-content"><div class="category-content-heading"><div><small>SELECT CATEGORY</small><h3>'+esc(selectedRoot?.name||"ক্যাটাগরি")+'</h3></div>'+(selectedRoot?'<button class="category-show-all" data-category="'+esc(selectedRoot.name)+'">সব পণ্য দেখুন →</button>':'')+'</div>'+subgrid+'</div>';
+  grid.innerHTML=sidebar+content;
+  grid.querySelectorAll("[data-root-category]").forEach(b=>b.onclick=()=>{window.activeRootCategory=b.dataset.rootCategory;activeCategory=b.dataset.rootCategory;renderCategories();renderProducts()});
   grid.querySelectorAll("[data-category]").forEach(b=>b.onclick=()=>{activeCategory=b.dataset.category;renderCategories();renderProducts()});
 }
 function renderCategoryOptions(selected=""){
