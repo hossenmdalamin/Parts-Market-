@@ -21,50 +21,76 @@ function fallbackProducts(){return [
 {id:"demo-4",name:"Handle Crown Set",price:4000,category:"Accessories",stock:3,compatibility:"Sports Bikes",description:"Stylish alloy handle crown",image:"",demo:true}
 ]}
 async function loadCategories(){
-  if(!db){categories=["Brake","Clutch","Accessories","Lighting","Other"].map(name=>({name}));renderCategories();return}
-  const {data,error}=await db.from("categories").select("name").order("name");
+  if(!db){categories=["Brake","Clutch","Accessories","Lighting","Other"].map(name=>({name,parent_name:null}));renderCategories();return}
+  const {data,error}=await db.from("categories").select("name,parent_name").order("name");
   if(error){console.error("Category load:",error);$("categoryGrid").innerHTML='<div class="empty">ক্যাটাগরি লোড করা যায়নি।</div>';return}
   categories=data||[];renderCategories();renderCategoryOptions();
 }
 function renderCategories(){
   const grid=$("categoryGrid");if(!grid)return;
-  grid.innerHTML='<button class="category-tile '+(activeCategory==="সব"?"active":"")+'" data-category="সব"><span>⚙</span><b>সব পণ্য</b></button>'+categories.map((c,i)=>'<button class="category-tile '+(activeCategory===c.name?"active":"")+'" data-category="'+esc(c.name)+'"><span>'+(["◉","⌁","✦","☼","⚙"][i%5])+'</span><b>'+esc(c.name)+'</b></button>').join("");
+  const roots=categories.filter(c=>!c.parent_name);
+  const tiles=roots.map((c,i)=>{
+    const children=categories.filter(x=>x.parent_name===c.name);
+    return '<div class="category-group"><button class="category-tile '+(activeCategory===c.name?"active":"")+'" data-category="'+esc(c.name)+'"><span>'+(["◉","⌁","✦","☼","⚙"][i%5])+'</span><b>'+esc(c.name)+'</b></button>'+
+      (children.length?'<div class="subcategory-list">'+children.map(ch=>'<button class="subcategory-chip '+(activeCategory===ch.name?"active":"")+'" data-category="'+esc(ch.name)+'">'+esc(ch.name)+'</button>').join("")+'</div>':'')+'</div>';
+  }).join("");
+  grid.innerHTML='<button class="category-tile '+(activeCategory==="সব"?"active":"")+'" data-category="সব"><span>⚙</span><b>সব পণ্য</b></button>'+tiles;
   grid.querySelectorAll("[data-category]").forEach(b=>b.onclick=()=>{activeCategory=b.dataset.category;renderCategories();renderProducts()});
 }
 function renderCategoryOptions(selected=""){
   const select=$("productCategory");if(!select)return;
-  select.innerHTML=categories.map(c=>'<option value="'+esc(c.name)+'">'+esc(c.name)+'</option>').join("");
+  select.innerHTML=categories.map(c=>'<option value="'+esc(c.name)+'">'+(c.parent_name?esc(c.parent_name)+' / ':'')+esc(c.name)+'</option>').join("");
   if(selected&&categories.some(c=>c.name===selected))select.value=selected;
 }
+function renderCategoryParentOptions(selected="",exclude=""){
+  const select=$("categoryParent");if(!select)return;
+  select.innerHTML='<option value="">মূল ক্যাটাগরি (Parent)</option>'+categories.filter(c=>!c.parent_name&&c.name!==exclude).map(c=>'<option value="'+esc(c.name)+'">'+esc(c.name)+'</option>').join("");
+  select.value=selected||"";
+}
 async function refreshCategoryManager(){
-  const {data,error}=await db.from("categories").select("name").order("name");
+  const {data,error}=await db.from("categories").select("name,parent_name").order("name");
   if(error){$("adminCategories").textContent=error.message;return}
   categories=data||[];renderCategories();renderCategoryOptions();
-  $("adminCategories").innerHTML=categories.map(c=>'<div class="admin-item"><b>'+esc(c.name)+'</b><span><button data-cat-edit="'+esc(c.name)+'">এডিট</button><button data-cat-delete="'+esc(c.name)+'">ডিলিট</button></span></div>').join("")||"কোনো ক্যাটাগরি নেই";
-  document.querySelectorAll("[data-cat-edit]").forEach(b=>b.onclick=()=>{const f=$("categoryForm");f.elements.old_name.value=b.dataset.catEdit;f.elements.name.value=b.dataset.catEdit;$("categoryMessage").textContent="এডিট মোড"});
+  const roots=categories.filter(c=>!c.parent_name);
+  $("adminCategories").innerHTML=roots.map(c=>{
+    const children=categories.filter(x=>x.parent_name===c.name);
+    const row=(x)=>'<div class="admin-item"><b>'+esc(x.name)+(x.parent_name?' <small>— '+esc(x.parent_name)+'</small>':'')+'</b><span><button data-cat-edit="'+esc(x.name)+'">এডিট</button><button data-cat-delete="'+esc(x.name)+'">ডিলিট</button></span></div>';
+    return row(c)+children.map(row).join("");
+  }).join("")||"কোনো ক্যাটাগরি নেই";
+  renderCategoryParentOptions();
+  document.querySelectorAll("[data-cat-edit]").forEach(b=>b.onclick=()=>{
+    const c=categories.find(x=>x.name===b.dataset.catEdit),f=$("categoryForm");
+    f.elements.old_name.value=c.name;f.elements.name.value=c.name;
+    renderCategoryParentOptions(c.parent_name||"",c.name);
+    $("categoryMessage").textContent="এডিট মোড";
+  });
   document.querySelectorAll("[data-cat-delete]").forEach(b=>b.onclick=()=>deleteCategory(b.dataset.catDelete));
 }
 async function saveCategory(e){
-  e.preventDefault();const f=e.target,old=f.elements.old_name.value.trim(),name=f.elements.name.value.trim();
+  e.preventDefault();const f=e.target,old=f.elements.old_name.value.trim(),name=f.elements.name.value.trim(),parent_name=f.elements.parent_name?.value||null;
   if(!name){$("categoryMessage").textContent="ক্যাটাগরির নাম লিখুন";return}
+  if(parent_name===name){$("categoryMessage").textContent="ক্যাটাগরি নিজেই নিজের Sub-catalogue হতে পারে না।";return}
   $("categoryMessage").textContent="সেভ হচ্ছে...";
   if(old){
     const {count,error:countError}=await db.from("products").select("id",{count:"exact",head:true}).eq("category",old);
     if(countError){$("categoryMessage").textContent=countError.message;return}
-    const {error}=await db.from("categories").update({name}).eq("name",old);
+    const {error}=await db.from("categories").update({name,parent_name}).eq("name",old);
     if(error){$("categoryMessage").textContent=error.message;return}
     if(old!==name&&count){const {error:moveError}=await db.from("products").update({category:name}).eq("category",old);if(moveError){$("categoryMessage").textContent="ক্যাটাগরি বদলেছে, কিন্তু পণ্য আপডেট হয়নি: "+moveError.message;return}}
   }else{
-    const {error}=await db.from("categories").insert({name});
+    const {error}=await db.from("categories").insert({name,parent_name});
     if(error){$("categoryMessage").textContent=error.message;return}
   }
-  f.reset();$("categoryMessage").textContent="ক্যাটাগরি সেভ হয়েছে";await refreshCategoryManager();await loadProducts();
+  f.reset();f.elements.old_name.value="";renderCategoryParentOptions();$("categoryMessage").textContent="ক্যাটাগরি সেভ হয়েছে";await refreshCategoryManager();await loadProducts();
 }
 async function deleteCategory(name){
   if(!confirm('"'+name+'" ক্যাটাগরি মুছতে চান?'))return;
   const {count,error:countError}=await db.from("products").select("id",{count:"exact",head:true}).eq("category",name);
   if(countError){toast(countError.message);return}
   if(count>0){toast("এই ক্যাটাগরিতে পণ্য আছে। আগে পণ্যগুলো অন্য ক্যাটাগরিতে সরান।");return}
+  const {count:childCount,error:childError}=await db.from("categories").select("name",{count:"exact",head:true}).eq("parent_name",name);
+  if(childError){toast(childError.message);return}
+  if(childCount>0){toast("আগে এই ক্যাটাগরির Sub-catalogue মুছে ফেলুন বা অন্য মূল ক্যাটাগরিতে সরান।");return}
   const {error}=await db.from("categories").delete().eq("name",name);
   if(error){toast(error.message);return}
   if(activeCategory===name)activeCategory="সব";
@@ -100,7 +126,8 @@ function updateWishlistButton(){
 function openProductImageViewer(src,alt="পণ্যের ছবি"){const old=document.getElementById("productImageViewer");if(old)old.remove();const viewer=document.createElement("div");viewer.id="productImageViewer";viewer.className="product-image-viewer";const close=document.createElement("button");close.type="button";close.className="product-image-viewer-close";close.textContent="✕";close.setAttribute("aria-label","ছবি বন্ধ করুন");const img=document.createElement("img");img.src=src;img.alt=alt;viewer.append(close,img);document.body.appendChild(viewer);document.body.style.overflow="hidden";const dismiss=()=>{viewer.remove();document.body.style.overflow="";document.removeEventListener("keydown",onKey)};const onKey=e=>{if(e.key==="Escape")dismiss()};close.onclick=dismiss;viewer.addEventListener("click",e=>{if(e.target===viewer)dismiss()});document.addEventListener("keydown",onKey)}
 function renderProducts(){
  const term=$("search").value.trim().toLowerCase(),bike=$("bikeFilter")?.value||"";
- const list=products.filter(p=>(activeCategory==="সব"||p.category===activeCategory)&&(!bike||String(p.compatibility||"").trim()===bike)&&(!wishlistMode||wishlistIds.includes(String(p.id)))&&(`${p.name} ${p.category} ${p.compatibility||""}`.toLowerCase().includes(term)));
+ const selectedCategories=activeCategory==="সব"?null:[activeCategory,...categories.filter(c=>c.parent_name===activeCategory).map(c=>c.name)];
+ const list=products.filter(p=>(!selectedCategories||selectedCategories.includes(p.category))&&(!bike||String(p.compatibility||"").trim()===bike)&&(!wishlistMode||wishlistIds.includes(String(p.id)))&&(`${p.name} ${p.category} ${p.compatibility||""}`.toLowerCase().includes(term)));
  $("productCount").textContent=`${list.length}টি পণ্য`;
  $("productGrid").innerHTML=list.length?list.map(p=>{
   const saved=wishlistIds.includes(String(p.id));
