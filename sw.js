@@ -1,6 +1,5 @@
-const CACHE_NAME = "parts-market-pwa-v1";
+const CACHE_NAME = "parts-market-pwa-v2";
 const APP_SHELL = [
-  "./",
   "./index.html",
   "./track.html",
   "./styles.css",
