@@ -107,6 +107,7 @@ function renderProducts(){
   return `<article class="product-card"><button type="button" class="wishlist-heart ${saved?"saved":""}" data-wishlist="${esc(p.id)}" aria-label="পছন্দের তালিকায় ${saved?"আছে":"যোগ করুন"}">${saved?"♥":"♡"}</button><a class="product-card-link" href="./product.html?id=${encodeURIComponent(p.id)}" aria-label="${esc(p.name)} বিস্তারিত দেখুন"><div class="product-image">${p.image_url||p.image?`<img src="${esc(p.image_url||p.image)}" alt="${esc(p.name)}" loading="lazy">`:'<span class="placeholder">⚙</span>'}<span class="stock-tag">${Number(p.stock)>0?"ইন স্টক":"স্টক আউট"}</span></div><div class="product-info"><small>${esc(p.category||"OTHER")}</small><h3>${esc(p.name)}</h3><p>${esc(p.compatibility||p.description||"")}</p><div class="product-bottom"><b class="price">${money(p.price)}</b><span class="add-btn">View Details →</span></div></div></a></article>`;
  }).join(""):'<div class="empty">কোনো পণ্য পাওয়া যায়নি।</div>';
  document.querySelectorAll("[data-wishlist]").forEach(b=>b.onclick=()=>toggleWishlist(b.dataset.wishlist));
+ document.querySelectorAll(".product-image img").forEach(img=>img.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();openProductImageViewer(img.currentSrc||img.src,img.alt)}));
  updateWishlistButton();
 }function cartKey(x){return String(x.id)+"::"+(x.color||"")}
 function addToCart(id,color=""){
