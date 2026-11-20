@@ -27,6 +27,25 @@ async function loadCategories(){
   if(error){console.error("Category load:",error);$("categoryGrid").innerHTML='<div class="empty">ক্যাটাগরি লোড করা যায়নি।</div>';return}
   categories=data||[];renderCategories();renderCategoryOptions();
 }
+function categoryVisual(name){
+ const n=String(name||"").toLowerCase();
+ if(/brake|ব্রেক/.test(n))return "🛑";
+ if(/clutch|ক্লাচ/.test(n))return "⚙️";
+ if(/light|lighting|elect|লাইট/.test(n))return "💡";
+ if(/body|fairing|বডি/.test(n))return "🏍️";
+ if(/handle|mirror|হ্যান্ডেল/.test(n))return "🪞";
+ if(/suspension|shock|ব্রেক/.test(n))return "🔧";
+ if(/engine|performance|ইঞ্জিন/.test(n))return "🔩";
+ if(/exhaust|sound|সাইলেন্সার/.test(n))return "💨";
+ if(/wheel|tyre|tire|চাকা/.test(n))return "🛞";
+ if(/accessor|এক্সেস/.test(n))return "✨";
+ return "🏁";
+}
+function categoryPhoto(root,children){
+ const names=[root.name,...children.map(c=>c.name)];
+ const match=products.find(p=>names.includes(p.category)&&(p.image_url||p.image));
+ return match?(match.image_url||match.image):"";
+}
 function renderCategories(){
  const grid=$("categoryGrid");if(!grid)return;
  const roots=categories.filter(c=>!c.parent_name);
@@ -34,11 +53,14 @@ function renderCategories(){
  const rows=roots.map((root,i)=>{
   const children=categories.filter(c=>c.parent_name===root.name);
   const expanded=window.expandedCategory===root.name;
-  return '<section class="category-accordion-item '+(expanded?'expanded':'')+'"><button type="button" class="category-accordion-trigger '+(activeCategory===root.name?'active':'')+'" data-root-category="'+esc(root.name)+'" aria-expanded="'+expanded+'"><span class="category-accordion-icon">'+(["◉","⌁","✦","☼","⚙"][i%5])+'</span><b>'+esc(root.name)+'</b><span class="category-accordion-count">'+children.length+'</span><span class="category-accordion-chevron">'+(expanded?'⌃':'⌄')+'</span></button>'+(expanded?'<div class="category-accordion-panel">'+(children.length?children.map(ch=>'<button type="button" class="category-subitem '+(activeCategory===ch.name?'active':'')+'" data-category="'+esc(ch.name)+'"><span class="category-subitem-marker">↳</span><span>'+esc(ch.name)+'</span><span class="category-subitem-arrow">›</span></button>').join(""):'<p class="category-accordion-empty">এখনো কোনো সাব-ক্যাটাগরি যোগ করা হয়নি।</p>')+'</div>':'')+'</section>';
+  const photo=categoryPhoto(root,children);
+  const itemCount=products.filter(p=>[root.name,...children.map(c=>c.name)].includes(p.category)).length;
+  const visual=categoryVisual(root.name);
+  return '<section class="category-accordion-item '+(expanded?'expanded':'')+'"><button type="button" class="category-accordion-trigger '+(activeCategory===root.name?'active':'')+'" data-root-category="'+esc(root.name)+'" aria-expanded="'+expanded+'"><span class="category-card-visual">'+(photo?'<img src="'+esc(photo)+'" alt="" loading="lazy">':'<span class="category-card-fallback">'+visual+'</span>')+'<i>'+visual+'</i></span><span class="category-card-copy"><b>'+esc(root.name)+'</b><small>'+itemCount+'টি পণ্য · '+children.length+'টি সাব-ক্যাটাগরি</small></span><span class="category-accordion-chevron">'+(expanded?'⌃':'⌄')+'</span></button>'+(expanded?'<div class="category-accordion-panel">'+(children.length?children.map(ch=>'<button type="button" class="category-subitem '+(activeCategory===ch.name?'active':'')+'" data-category="'+esc(ch.name)+'"><span class="category-subitem-marker">'+categoryVisual(ch.name)+'</span><span>'+esc(ch.name)+'</span><span class="category-subitem-arrow">›</span></button>').join(""):'<p class="category-accordion-empty">এখনো কোনো সাব-ক্যাটাগরি যোগ করা হয়নি।</p>')+'</div>':'')+'</section>';
  }).join("");
- grid.innerHTML='<div class="category-accordion"><button type="button" class="category-all-button '+(activeCategory==="সব"?'active':'')+'" data-category="সব"><span class="category-accordion-icon">⌂</span><b>সব পণ্য</b><span class="category-subitem-arrow">›</span></button>'+rows+'</div>';
+ grid.innerHTML='<div class="category-accordion"><button type="button" class="category-all-button '+(activeCategory==="সব"?'active':'')+'" data-category="সব"><span class="category-all-icon">▦</span><b>সব পণ্য দেখুন</b><span class="category-subitem-arrow">›</span></button>'+rows+'</div>';
  grid.querySelectorAll("[data-root-category]").forEach(b=>b.onclick=()=>{const name=b.dataset.rootCategory;window.expandedCategory=window.expandedCategory===name?"":name;activeCategory=name;renderCategories();renderProducts()});
- grid.querySelectorAll("[data-category]").forEach(b=>b.onclick=()=>{activeCategory=b.dataset.category;renderCategories();renderProducts()});
+ grid.querySelectorAll("[data-category]").forEach(b=>b.onclick=()=>{activeCategory=b.dataset.category;renderCategories();renderProducts();$("products")?.scrollIntoView({behavior:"smooth",block:"start"})});
 }
 function renderCategoryOptions(selected=""){
   const select=$("productCategory");if(!select)return;
@@ -109,7 +131,7 @@ async function loadProducts(){
     const models=await db.from("bike_models").select("name").order("name");
     bikeModelOptions=!models.error&&Array.isArray(models.data)&&models.data.length?models.data.map(x=>x.name):[...new Set(products.flatMap(p=>String(p.compatibility||"").split(/[,/|;]+/).map(x=>x.trim()).filter(Boolean)))];
   }else{products=fallbackProducts();bikeModelOptions=[...new Set(products.flatMap(p=>String(p.compatibility||"").split(/[,/|;]+/).map(x=>x.trim()).filter(Boolean)))]}
-  renderCompatibilityOptions();renderProducts();
+  renderCompatibilityOptions();renderCategories();renderProducts();
 }
 function renderCompatibilityOptions(){
  const select=$("bikeFilter");if(!select)return;
