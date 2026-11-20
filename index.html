@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=category-accordion-20261120-1">
+  <link rel="stylesheet" href="./styles.css?v=top-social-contact-20261120-1">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./config.js"></script>
 </head>
@@ -20,6 +20,14 @@
     <div class="search-wrap"><input id="search" type="search" placeholder="পণ্যের নাম দিয়ে খুঁজুন..."><button id="searchBtn" aria-label="Search">⌕</button></div><div class="store-filters"><select id="bikeFilter" aria-label="বাইক মডেল অনুযায়ী ফিল্টার"><option value="">সব বাইকের পার্টস</option></select><button type="button" id="wishlistToggle" class="wishlist-toggle" aria-pressed="false">♡ পছন্দের পণ্য <span id="wishlistCount">0</span></button></div>
     <nav><a href="#products">পণ্য</a><a href="#categories">ক্যাটাগরি</a><a href="./track.html">অর্ডার ট্র্যাক</a><button class="cart-open" id="cartOpen">কার্ট <span id="cartCount">0</span></button></nav>
   </header>
+
+  <div class="top-contact-strip">
+    <a class="top-whatsapp-link" href="https://wa.me/8801954191730" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp-এ সরাসরি কথা বলুন">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 3.5A11.8 11.8 0 0 0 2 17.7L.8 23.2l5.6-1.2A11.8 11.8 0 1 0 20.5 3.5ZM12 21a9 9 0 0 1-4.6-1.3l-.3-.2-3.3.7.7-3.2-.2-.3A9 9 0 1 1 12 21Zm5-6.7c-.3-.2-1.7-.9-2-.9s-.5-.2-.7.2-.8.9-1 1.1-.4.2-.7.1a7.4 7.4 0 0 1-2.2-1.4 8.2 8.2 0 0 1-1.5-1.9c-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.4.3-.6.1-.2 0-.4 0-.6s-.7-1.6-1-2.1c-.2-.5-.5-.4-.7-.4h-.6c-.2 0-.6.1-.9.4s-1.2 1.2-1.2 2.8 1.2 3.2 1.4 3.4a11 11 0 0 0 4.2 3.7c.6.3 1.1.5 1.5.6.6.2 1.2.2 1.7.1.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.3.1-1.4-.1-.1-.3-.2-.6-.4Z"/></svg>
+      <span>WhatsApp-এ সরাসরি কথা বলুন</span>
+    </a>
+    <div class="social-links top-social-links" id="socialLinks" aria-label="Social media links"></div>
+  </div>
 
   <main>
     <section class="hero">
@@ -48,13 +56,9 @@
       <div id="productGrid" class="product-grid"><div class="loading">পণ্য লোড হচ্ছে...</div></div>
     </section>
 
-    <section class="support-banner">
-      <div><p class="eyebrow">NEED HELP CHOOSING?</p><h2>সঠিক পার্টস খুঁজে পেতে<br>আমাদের সাথে কথা বলুন</h2></div>
-      <a class="btn btn-light" href="https://wa.me/8801954191730" target="_blank" rel="noopener">WhatsApp করুন ↗</a>
-    </section>
   </main>
 
-  <footer><a class="brand" href="#"><span class="brand-mark">PM</span><span><b>PARTS MARKET</b><small>EVERYTHING IN ONE PLACE</small></span></a><p>© <span id="year"></span> PARTS MARKET. All rights reserved.</p><div class="social-links" id="socialLinks" aria-label="Social media"></div></footer>
+  <footer><a class="brand" href="#"><span class="brand-mark">PM</span><span><b>PARTS MARKET</b><small>EVERYTHING IN ONE PLACE</small></span></a><p>© <span id="year"></span> PARTS MARKET. All rights reserved.</p></footer>
 
   <div class="overlay" id="overlay"></div>
   <aside class="drawer" id="cartDrawer">
