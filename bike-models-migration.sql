@@ -15,10 +15,11 @@ create policy "Admins manage bike models" on public.bike_models
   for all to authenticated using (public.is_admin()) with check (public.is_admin());
 grant select on public.bike_models to anon, authenticated;
 grant insert, update, delete on public.bike_models to authenticated;
--- Seed current compatibility names to preserve the existing storefront filter.
+-- Seed current compatibility names; case-insensitive duplicates are collapsed.
 insert into public.bike_models (name)
-select distinct trim(token)
+select min(trim(token))
 from public.products p
 cross join lateral regexp_split_to_table(coalesce(p.compatibility, ''), '[,/|;]+') as token
 where trim(token) <> ''
+group by lower(trim(token))
 on conflict do nothing;
