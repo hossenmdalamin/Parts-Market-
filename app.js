@@ -439,8 +439,13 @@ async function loadStoreBranding(){
   $("siteBrandName").textContent=name;
   document.title=name+" | Everything in One Place";
   if(data.logo_url){$("siteLogo").src=data.logo_url;$("siteLogo").hidden=false;$("brandMark").hidden=true}
-  const items=[["facebook_url","Facebook","f"],["youtube_url","YouTube","▶"],["tiktok_url","TikTok","♪"]];
-  $("socialLinks").innerHTML=items.filter(([key])=>data[key]).map(([key,label,mark])=>'<a href="'+esc(data[key])+'" target="_blank" rel="noopener noreferrer" aria-label="'+label+'">'+mark+' '+label+'</a>').join("");
+  const icons={
+    facebook:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1v-2c0-.9.3-1.5 1.6-1.5h1.7V3.6c-.3 0-1.4-.1-2.6-.1-2.6 0-4.3 1.6-4.3 4.5v1.9H7v3.1h2.9v8h3.6Z"/></svg>',
+    tiktok:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.6 8.2a7.1 7.1 0 0 1-4.3-1.4v7.1a5.8 5.8 0 1 1-5-5.7v3.2a2.7 2.7 0 1 0 1.9 2.6V2.8h3.1c.2 2.2 1.9 4 4.3 4.2v3.2Z"/></svg>',
+    youtube:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M23 7.1a3 3 0 0 0-2.1-2.2C19 4.4 12 4.4 12 4.4s-7 0-8.9.5A3 3 0 0 0 1 7.1 31 31 0 0 0 .5 12a31 31 0 0 0 .5 4.9 3 3 0 0 0 2.1 2.2c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.2 31 31 0 0 0 .5-4.9 31 31 0 0 0-.5-4.9ZM9.7 15.5v-7l6 3.5-6 3.5Z"/></svg>'
+  };
+  const items=[["facebook_url","Facebook","facebook"],["tiktok_url","TikTok","tiktok"],["youtube_url","YouTube","youtube"]];
+  $("socialLinks").innerHTML=items.filter(([key])=>data[key]).map(([key,label,icon])=>'<a class="social-icon-link '+icon+'" href="'+esc(data[key])+'" target="_blank" rel="noopener noreferrer" aria-label="'+label+'" title="'+label+'">'+icons[icon]+'</a>').join("");
 }
 loadStoreBranding();
 if(new URLSearchParams(location.search).get("cart")==="1"){openCart();history.replaceState({}, "", location.pathname)}
