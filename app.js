@@ -27,17 +27,17 @@ async function loadCategories(){
   categories=data||[];renderCategories();renderCategoryOptions();
 }
 function renderCategories(){
-  const grid=$("categoryGrid");if(!grid)return;
-  const roots=categories.filter(c=>!c.parent_name);
-  if(!window.activeRootCategory||!roots.some(c=>c.name===window.activeRootCategory))window.activeRootCategory=roots[0]?.name||"";
-  const selectedRoot=roots.find(c=>c.name===window.activeRootCategory);
-  const children=selectedRoot?categories.filter(c=>c.parent_name===selectedRoot.name):[];
-  const sidebar='<aside class="category-sidebar"><button class="category-side-item '+(activeCategory==="সব"?"active":"")+'" data-category="সব"><span class="category-side-icon">⌂</span><span>সব পণ্য</span></button>'+roots.map((c,i)=>'<button class="category-side-item '+(window.activeRootCategory===c.name?"selected":"")+'" data-root-category="'+esc(c.name)+'"><span class="category-side-icon">'+(["◉","⌁","✦","☼","⚙"][i%5])+'</span><span>'+esc(c.name)+'</span><span class="category-side-arrow">›</span></button>').join("")+'</aside>';
-  const subgrid=children.length?'<div class="subcategory-grid">'+children.map(ch=>'<button class="subcategory-card '+(activeCategory===ch.name?"active":"")+'" data-category="'+esc(ch.name)+'"><span class="subcategory-card-icon">⚙</span><b>'+esc(ch.name)+'</b><span class="subcategory-card-arrow">→</span></button>').join("")+'</div>':'<div class="category-empty">এই ক্যাটাগরিতে এখনো কোনো সাব-ক্যাটাগরি যোগ করা হয়নি।</div>';
-  const content='<div class="category-content"><div class="category-content-heading"><div><small>SELECT CATEGORY</small><h3>'+esc(selectedRoot?.name||"ক্যাটাগরি")+'</h3></div>'+(selectedRoot?'<button class="category-show-all" data-category="'+esc(selectedRoot.name)+'">সব পণ্য দেখুন →</button>':'')+'</div>'+subgrid+'</div>';
-  grid.innerHTML=sidebar+content;
-  grid.querySelectorAll("[data-root-category]").forEach(b=>b.onclick=()=>{window.activeRootCategory=b.dataset.rootCategory;activeCategory=b.dataset.rootCategory;renderCategories();renderProducts()});
-  grid.querySelectorAll("[data-category]").forEach(b=>b.onclick=()=>{activeCategory=b.dataset.category;renderCategories();renderProducts()});
+ const grid=$("categoryGrid");if(!grid)return;
+ const roots=categories.filter(c=>!c.parent_name);
+ if(!window.expandedCategory||!roots.some(c=>c.name===window.expandedCategory))window.expandedCategory=roots[0]?.name||"";
+ const rows=roots.map((root,i)=>{
+  const children=categories.filter(c=>c.parent_name===root.name);
+  const expanded=window.expandedCategory===root.name;
+  return '<section class="category-accordion-item '+(expanded?'expanded':'')+'"><button type="button" class="category-accordion-trigger '+(activeCategory===root.name?'active':'')+'" data-root-category="'+esc(root.name)+'" aria-expanded="'+expanded+'"><span class="category-accordion-icon">'+(["◉","⌁","✦","☼","⚙"][i%5])+'</span><b>'+esc(root.name)+'</b><span class="category-accordion-count">'+children.length+'</span><span class="category-accordion-chevron">'+(expanded?'⌃':'⌄')+'</span></button>'+(expanded?'<div class="category-accordion-panel">'+(children.length?children.map(ch=>'<button type="button" class="category-subitem '+(activeCategory===ch.name?'active':'')+'" data-category="'+esc(ch.name)+'"><span class="category-subitem-marker">↳</span><span>'+esc(ch.name)+'</span><span class="category-subitem-arrow">›</span></button>').join(""):'<p class="category-accordion-empty">এখনো কোনো সাব-ক্যাটাগরি যোগ করা হয়নি।</p>')+'</div>':'')+'</section>';
+ }).join("");
+ grid.innerHTML='<div class="category-accordion"><button type="button" class="category-all-button '+(activeCategory==="সব"?'active':'')+'" data-category="সব"><span class="category-accordion-icon">⌂</span><b>সব পণ্য</b><span class="category-subitem-arrow">›</span></button>'+rows+'</div>';
+ grid.querySelectorAll("[data-root-category]").forEach(b=>b.onclick=()=>{const name=b.dataset.rootCategory;window.expandedCategory=window.expandedCategory===name?"":name;activeCategory=name;renderCategories();renderProducts()});
+ grid.querySelectorAll("[data-category]").forEach(b=>b.onclick=()=>{activeCategory=b.dataset.category;renderCategories();renderProducts()});
 }
 function renderCategoryOptions(selected=""){
   const select=$("productCategory");if(!select)return;
