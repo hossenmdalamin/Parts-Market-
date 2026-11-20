@@ -84,7 +84,7 @@
         <b>নম্বর: 01954191730</b><br>
         নাম, মোবাইল নম্বর ও সম্পূর্ণ ঠিকানা দিন। পেমেন্টের স্ক্রিনশট WhatsApp-এ পাঠাবেন এবং নিচে ট্রানজেকশনের শেষ ৩টি সংখ্যা লিখবেন। পার্সেলের ওজন/সাইজ বাড়লে ডেলিভারি চার্জ বাড়তে পারে। অর্ডার নিশ্চিত হওয়ার পর ৭২ ঘণ্টার মধ্যে ডেলিভারি (ইনশাআল্লাহ)।
       </div>
-      <label>পেমেন্টের ট্রানজেকশনের শেষ ৩টি সংখ্যা<input name="payment_last3" inputmode="numeric" pattern="[0-9]{3}" maxlength="3" minlength="3" placeholder="যেমন: 527" required></label>
+      <div class="coupon-checkout"><label>কুপন কোড (ঐচ্ছিক)<input id="couponCode" name="coupon_code" maxlength="30" placeholder="যেমন: PARTS100" autocomplete="off"></label><button type="button" id="applyCoupon" class="btn btn-dark">কুপন প্রয়োগ করুন</button><button type="button" id="removeCoupon" class="btn btn-outline" hidden>কুপন বাতিল</button><p id="couponMessage" class="form-message"></p><div class="coupon-summary"><span>পণ্যের মূল্য: <b id="checkoutSubtotal">৳০</b></span><span>কুপন ছাড়: <b id="checkoutDiscount">৳০</b></span><span>ডেলিভারি চার্জ: <b id="checkoutDelivery">৳০</b></span><strong>সর্বমোট: <b id="checkoutGrandTotal">৳০</b></strong></div></div><label>পেমেন্টের ট্রানজেকশনের শেষ ৩টি সংখ্যা<input name="payment_last3" inputmode="numeric" pattern="[0-9]{3}" maxlength="3" minlength="3" placeholder="যেমন: 527" required></label>
       <label>নোট (ঐচ্ছিক)<textarea name="note" rows="2"></textarea></label>
       <div class="payment-note">পণ্যের বাকি মূল্য ক্যাশ অন ডেলিভারি — পণ্য হাতে পেয়ে পরিশোধ করবেন।</div>
       <button class="btn btn-red full" type="submit">অর্ডার জমা দিন</button>
