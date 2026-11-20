@@ -76,10 +76,18 @@
           <option value="outside_dhaka">ঢাকা সিটির বাইরে — ৳১৫০</option>
         </select>
       </label>
-      <p class="muted">ডেলিভারি চার্জ অর্ডারের মোট টাকার সঙ্গে যোগ হবে।</p>
+      <div class="payment-note" style="margin:12px 0;padding:14px;border:1px solid #e63946;border-radius:10px;line-height:1.8">
+        <b>অর্ডার সিস্টেম</b><br>
+        ক্যাশ অন ডেলিভারি নিতে হলে শুধু কুরিয়ার চার্জ অগ্রিম দিয়ে অর্ডার নিশ্চিত করতে হবে। পণ্য হাতে পাওয়ার পর বাকি টাকা ডেলিভারি ম্যানকে দেবেন।<br>
+        <b>কুরিয়ার চার্জ (সর্বনিম্ন):</b><br>ঢাকা সিটির ভিতরে ৳৮০ · বাইরে ৳১৫০<br>
+        <b>অগ্রিম পেমেন্ট:</b> বিকাশ মার্চেন্ট / নগদ পার্সোনাল<br>
+        <b>নম্বর: 01954191730</b><br>
+        নাম, মোবাইল নম্বর ও সম্পূর্ণ ঠিকানা দিন। পেমেন্টের স্ক্রিনশট WhatsApp-এ পাঠাবেন এবং নিচে ট্রানজেকশনের শেষ ৩টি সংখ্যা লিখবেন। পার্সেলের ওজন/সাইজ বাড়লে ডেলিভারি চার্জ বাড়তে পারে। অর্ডার নিশ্চিত হওয়ার পর ৭২ ঘণ্টার মধ্যে ডেলিভারি (ইনশাআল্লাহ)।
+      </div>
+      <label>পেমেন্টের ট্রানজেকশনের শেষ ৩টি সংখ্যা<input name="payment_last3" inputmode="numeric" pattern="[0-9]{3}" maxlength="3" minlength="3" placeholder="যেমন: 527" required></label>
       <label>নোট (ঐচ্ছিক)<textarea name="note" rows="2"></textarea></label>
-      <div class="payment-note">পেমেন্ট পদ্ধতি: <b>Cash on Delivery</b></div>
-      <button class="btn btn-red full" type="submit">অর্ডার কনফার্ম করুন</button>
+      <div class="payment-note">পণ্যের বাকি মূল্য ক্যাশ অন ডেলিভারি — পণ্য হাতে পেয়ে পরিশোধ করবেন।</div>
+      <button class="btn btn-red full" type="submit">অর্ডার জমা দিন</button>
       <p class="form-message" id="checkoutMessage"></p>
     </form>
   </section>
@@ -148,7 +156,7 @@
 
   <a class="admin-shortcut" id="adminOpen" href="./admin.html" title="Admin" aria-label="Admin">⚙</a>
   <div class="toast" id="toast"></div>
-  <script src="./app.js?v=wishlist-bike-filter-20261120"></script>
+  <script src="./app.js?v=advance-delivery-payment-20261120"></script>
   <script>document.getElementById("adminOpen").onclick=()=>{window.location.href="./admin.html";};</script>
 </body>
 </html>
