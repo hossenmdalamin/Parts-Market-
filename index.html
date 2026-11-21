@@ -87,7 +87,7 @@
     <div class="modal-head"><h3>ডেলিভারি তথ্য</h3><button class="icon-btn" data-close="checkoutModal">✕</button></div>
     <form id="checkoutForm">
       <label>সম্পূর্ণ নাম<input name="customer_name" required autocomplete="name"></label>
-      <label>মোবাইল নম্বর<input name="phone" required inputmode="tel" placeholder="01XXXXXXXXX"></label>
+      <label>মোবাইল নম্বর<input name="phone" type="tel" required inputmode="numeric" minlength="11" maxlength="11" pattern="[0-9]{11}" title="ঠিক ১১ সংখ্যার মোবাইল নম্বর লিখুন" placeholder="01XXXXXXXXX"></label>
       <label>সম্পূর্ণ ঠিকানা<textarea name="address" rows="3" required></textarea></label>
       <label>ডেলিভারি এলাকা
         <select name="delivery_area" required>
@@ -176,7 +176,7 @@
 
   <a class="admin-shortcut" id="adminOpen" href="./admin.html" title="Admin" aria-label="Admin">⚙</a>
   <div class="toast" id="toast"></div>
-  <script src="./app.js?v=catalogue-loading-fix-20261121-3"></script>
+  <script src="./app.js?v=phone-11-digit-20261121"></script>
   <script>document.getElementById("adminOpen").onclick=()=>{window.location.href="./admin.html";};</script>
 
 <script>
