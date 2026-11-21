@@ -185,7 +185,7 @@ function openProductImageViewer(src,alt="পণ্যের ছবি"){const ol
 function renderProducts(){
  const term=$("search").value.trim().toLowerCase(),bike=$("bikeFilter")?.value||"";
  const selectedCategories=activeCategory==="সব"?null:[activeCategory,...categories.filter(c=>c.parent_name===activeCategory).map(c=>c.name)];
- const list=products.filter(p=>(!selectedCategories||selectedCategories.includes(p.category))&&(!bike||String(p.compatibility||"").split(/[,/|;]+/).some(x=>x.trim().toLowerCase()===bike.toLowerCase()))&&(!wishlistMode||wishlistIds.includes(String(p.id)))&&(`${p.name} ${p.category} ${p.compatibility||""}`.toLowerCase().includes(term)));
+ const list=products.filter(p=>{\n  const compatibility=String(p.compatibility||"").split(/[,/|;]+/).map(x=>x.trim().toLocaleLowerCase()).filter(Boolean);\n  const isUniversal=compatibility.some(x=>x==="universal");\n  const bikeMatches=!bike||(bike.toLocaleLowerCase()==="universal"?isUniversal:(isUniversal||compatibility.includes(bike.toLocaleLowerCase())));\n  return (!selectedCategories||selectedCategories.includes(p.category))&&bikeMatches&&(!wishlistMode||wishlistIds.includes(String(p.id)))&&(`${p.name} ${p.category} ${p.compatibility||""}`.toLowerCase().includes(term));\n });
  $("productCount").textContent=`${list.length}টি পণ্য`;
  $("productGrid").innerHTML=list.length?list.map(p=>{
   const saved=wishlistIds.includes(String(p.id));
