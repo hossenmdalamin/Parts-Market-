@@ -539,3 +539,6 @@ footer{margin-top:20px}
 
 /* Colour variant gallery */
 .detail-color-options{display:flex;flex-wrap:wrap;gap:9px;margin-top:10px}.detail-color-option{border:1px solid #3a414c;background:#1a2029;color:#f5f6f8;border-radius:9px;padding:9px 14px;font-weight:600}.detail-color-option.selected{border-color:#f04b59;background:#382027;box-shadow:0 0 0 2px #e6394630}.cart-item-image{width:48px;height:48px;object-fit:cover;border-radius:7px;flex:0 0 48px}
+
+/* Product colour and main-gallery selector */
+.detail-color-options{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.detail-color-option{padding:9px 13px;border:1px solid #414957;border-radius:8px;background:#171d26;color:#e8edf4;font-size:13px;font-weight:600}.detail-color-option:hover,.detail-color-option.selected{border-color:#e63946;background:#321d24;color:#ffb1b8}
