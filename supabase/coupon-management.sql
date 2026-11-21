@@ -36,6 +36,7 @@ AS $$
   );
 $$;
 
+DROP POLICY IF EXISTS "Public can view active coupons" ON public.coupons;
 DROP POLICY IF EXISTS "Authenticated users manage coupons" ON public.coupons;
 DROP POLICY IF EXISTS "Admin users manage coupons" ON public.coupons;
 
