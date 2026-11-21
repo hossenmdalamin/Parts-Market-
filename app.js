@@ -199,22 +199,24 @@ function renderProducts(){
 }function cartKey(x){return String(x.id)+"::"+(x.color||"")}
 function addToCart(id,color=""){
  const p=products.find(x=>String(x.id)===String(id));if(!p)return;
- const available=Array.isArray(p.colors)?p.colors:[];
- if(available.length&&!available.includes(color)){toast("কার্টে যোগ করার আগে কালার নির্বাচন করুন");return}
+ const variants=Array.isArray(p.variants)?p.variants:[];
+ const variant=variants.find(v=>String(v.name).toLocaleLowerCase()===String(color).toLocaleLowerCase());
+ if(variants.length&&!variant){toast("কার্টে যোগ করার আগে Colour নির্বাচন করুন");return}
+ const price=variant?Number(variant.price):Number(p.price),stock=variant?Number(variant.stock):Number(p.stock),image=variant?.images?.[0]||p.image_url||p.image||"";
+ if(stock<1){toast("এই Colour স্টক আউট");return}
  const found=cart.find(x=>cartKey(x)===String(id)+"::"+color);
- if(found){if(found.qty>=Number(p.stock)){toast("স্টকের চেয়ে বেশি যোগ করা যাবে না");return}found.qty++}
- else cart.push({id:p.id,name:p.name,price:Number(p.price),qty:1,stock:Number(p.stock),color});
+ if(found){if(found.qty>=stock){toast("স্টকের চেয়ে বেশি যোগ করা যাবে না");return}found.qty++}
+ else cart.push({id:p.id,name:p.name,price,qty:1,stock,color,image});
  saveCart();toast("কার্টে যোগ হয়েছে");
 }
 function renderCart(){
  $("cartCount").textContent=cart.reduce((n,x)=>n+x.qty,0);
- $("cartItems").innerHTML=cart.length?cart.map(x=>`<div class="cart-row"><div><b>${esc(x.name)}</b><small>${x.color?"কালার: "+esc(x.color)+" · ":""}${money(x.price)} × ${x.qty}</small></div><div class="qty-controls"><button data-dec="${esc(cartKey(x))}">−</button><b>${x.qty}</b><button data-inc="${esc(cartKey(x))}">+</button></div></div>`).join(""):'<div class="empty">কার্ট এখনো খালি।</div>';
+ $("cartItems").innerHTML=cart.length?cart.map(x=>`<div class="cart-row">${x.image?'<img class="cart-item-image" src="'+esc(x.image)+'" alt="">':''}<div><b>${esc(x.name)}</b><small>${x.color?"কালার: "+esc(x.color)+" · ":""}${money(x.price)} × ${x.qty}</small></div><div class="qty-controls"><button data-dec="${esc(cartKey(x))}">−</button><b>${x.qty}</b><button data-inc="${esc(cartKey(x))}">+</button></div></div>`).join(""):'<div class="empty">কার্ট এখনো খালি।</div>';
  $("cartTotal").textContent=money(cart.reduce((n,x)=>n+x.price*x.qty,0));
  document.querySelectorAll("[data-dec]").forEach(b=>b.onclick=()=>changeQty(b.dataset.dec,-1));
  document.querySelectorAll("[data-inc]").forEach(b=>b.onclick=()=>changeQty(b.dataset.inc,1));
 }
 function changeQty(key,d){const x=cart.find(i=>cartKey(i)===key);if(!x)return;if(d>0&&x.qty>=x.stock){toast("স্টকের চেয়ে বেশি যোগ করা যাবে না");return}x.qty+=d;if(x.qty<1)cart=cart.filter(i=>cartKey(i)!==key);saveCart()}
-
 function renderCouponSummary(){const subtotal=cart.reduce((n,x)=>n+Number(x.price||0)*Number(x.qty||0),0);const area=$('checkoutForm')?.elements.delivery_area?.value;const fee=area==='inside_dhaka'?80:area==='outside_dhaka'?150:0;const discount=appliedCoupon.code?Math.min(appliedCoupon.discount,subtotal):0;if($('checkoutSubtotal'))$('checkoutSubtotal').textContent=money(subtotal);if($('checkoutDiscount'))$('checkoutDiscount').textContent=money(discount);if($('checkoutDelivery'))$('checkoutDelivery').textContent=money(fee);if($('checkoutGrandTotal'))$('checkoutGrandTotal').textContent=money(subtotal-discount+fee);if($('removeCoupon'))$('removeCoupon').hidden=!appliedCoupon.code}
 async function applyCoupon(){const code=$('couponCode').value.trim().toUpperCase();if(!code){$('couponMessage').textContent='কুপন কোড লিখুন।';return}if(!db){$('couponMessage').textContent='সার্ভারের সাথে সংযোগ নেই।';return}$('couponMessage').textContent='কুপন যাচাই হচ্ছে...';const {data,error}=await db.rpc('get_coupon_discount',{p_coupon_code:code});if(error){$('couponMessage').textContent='কুপন যাচাই করা যায়নি: '+error.message;return}if(data==null){$('couponMessage').textContent='কুপনটি ভুল, বন্ধ অথবা ব্যবহারের সীমা শেষ।';appliedCoupon={code:'',discount:0};renderCouponSummary();return}const subtotal=cart.reduce((n,x)=>n+Number(x.price||0)*Number(x.qty||0),0);appliedCoupon={code,discount:Number(data)};$('couponMessage').textContent='সফল! '+money(Math.min(Number(data),subtotal))+' ছাড় প্রযোজ্য হয়েছে।';renderCouponSummary()}
 async function checkout(e) {
