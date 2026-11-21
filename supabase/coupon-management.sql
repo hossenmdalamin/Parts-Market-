@@ -195,7 +195,7 @@ END;
 $function$;
 
 GRANT EXECUTE ON FUNCTION public.place_order(
-  text, text, text, integer, integer, jsonb, text, text, text
+  text, text, text, text, integer, jsonb, text, text, text
 ) TO anon, authenticated;
 
 NOTIFY pgrst, 'reload schema';
