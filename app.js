@@ -304,8 +304,9 @@ ORDER DETAILS:
 ${itemText}
 
 পণ্যের মূল্য: ${money(subtotal)}
+কুপন ছাড়: ${money(discount)}
 অগ্রিম কুরিয়ার চার্জ: ${money(deliveryFee)}
-পণ্য হাতে পেয়ে COD পরিশোধ: ${money(subtotal)}
+পণ্য হাতে পেয়ে COD পরিশোধ: ${money(Math.max(0, subtotal - discount))}
 সর্বমোট অর্ডার মূল্য: ${money(total)}
 পেমেন্ট মাধ্যম: বিকাশ মার্চেন্ট / নগদ পার্সোনাল
 ট্রানজেকশনের শেষ ৩ সংখ্যা: ${paymentLast3}
@@ -324,8 +325,10 @@ Order Status: Pending — অগ্রিম পেমেন্ট যাচা�
 
   // Clear cart after successful database order
   cart = [];
+  appliedCoupon = {code:"", discount:0};
   saveCart();
   e.target.reset();
+  renderCouponSummary();
 
   $("checkoutMessage").textContent =
     "🎉 আপনার অর্ডার প্রায় সম্পন্ন!";
