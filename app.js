@@ -299,8 +299,7 @@ async function checkout(e) {
   // Create WhatsApp order message
   const itemText = orderedItems.map((x, i) =>
     `${i + 1}. ${x.name}${x.color ? " (Color: " + x.color + ")" : ""} × ${x.qty} = ${money(x.price * x.qty)}`
-  ).join("
-");
+  ).join("\n");
 
   const message =
 `🛒 NEW ORDER - PARTS MARKET
