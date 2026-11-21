@@ -185,7 +185,12 @@ function openProductImageViewer(src,alt="পণ্যের ছবি"){const ol
 function renderProducts(){
  const term=$("search").value.trim().toLowerCase(),bike=$("bikeFilter")?.value||"";
  const selectedCategories=activeCategory==="সব"?null:[activeCategory,...categories.filter(c=>c.parent_name===activeCategory).map(c=>c.name)];
- const list=products.filter(p=>(!selectedCategories||selectedCategories.includes(p.category))&&(!bike||String(p.compatibility||"").split(/[,/|;]+/).some(x=>x.trim().toLowerCase()===bike.toLowerCase()))&&(!wishlistMode||wishlistIds.includes(String(p.id)))&&(`${p.name} ${p.category} ${p.compatibility||""}`.toLowerCase().includes(term)));
+ const list=products.filter(p=>{
+  const compatibility=String(p.compatibility||"").split(/[,/|;]+/).map(x=>x.trim().toLocaleLowerCase()).filter(Boolean);
+  const isUniversal=compatibility.some(x=>x==="universal");
+  const bikeMatches=!bike||(bike.toLocaleLowerCase()==="universal"?isUniversal:(isUniversal||compatibility.includes(bike.toLocaleLowerCase())));
+  return (!selectedCategories||selectedCategories.includes(p.category))&&bikeMatches&&(!wishlistMode||wishlistIds.includes(String(p.id)))&&(`${p.name} ${p.category} ${p.compatibility||""}`.toLowerCase().includes(term));
+ });
  $("productCount").textContent=`${list.length}টি পণ্য`;
  $("productGrid").innerHTML=list.length?list.map(p=>{
   const saved=wishlistIds.includes(String(p.id));
@@ -291,7 +296,8 @@ async function checkout(e) {
   // Create WhatsApp order message
   const itemText = orderedItems.map((x, i) =>
     `${i + 1}. ${x.name}${x.color ? " (Color: " + x.color + ")" : ""} × ${x.qty} = ${money(x.price * x.qty)}`
-  ).join("\n");
+  ).join("
+");
 
   const message =
 `🛒 NEW ORDER - PARTS MARKET
