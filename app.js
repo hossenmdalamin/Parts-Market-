@@ -245,6 +245,12 @@ async function checkout(e) {
     deliveryArea: f.get("delivery_area")
   };
 
+  if (!/^[0-9]{11}$/.test(customer.phone)) {
+    $("checkoutMessage").textContent = "সঠিক ১১ সংখ্যার মোবাইল নম্বর লিখুন।";
+    e.target.elements.phone.focus();
+    return;
+  }
+
   const deliveryFee = customer.deliveryArea === "inside_dhaka" ? 80 :
     customer.deliveryArea === "outside_dhaka" ? 150 : null;
   if (deliveryFee === null) {
