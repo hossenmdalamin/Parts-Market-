@@ -202,7 +202,7 @@ function renderProducts(){
  document.querySelectorAll("[data-wishlist]").forEach(b=>b.onclick=()=>toggleWishlist(b.dataset.wishlist));
  document.querySelectorAll("[data-compare]").forEach(b=>b.onclick=()=>toggleCompare(b.dataset.compare));
  renderCompareTray();renderRecentlyViewed();
- document.querySelectorAll(".product-image img").forEach(img=>img.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();openProductImageViewer(img.currentSrc||img.src,img.alt)}));
+
  updateWishlistButton();
 }function cartKey(x){return String(x.id)+"::"+(x.color||"")}
 function addToCart(id,color=""){
