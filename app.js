@@ -201,8 +201,9 @@ function renderProducts(){
  }).join(""):'<div class="empty">কোনো পণ্য পাওয়া যায়নি।</div>';
  document.querySelectorAll("[data-wishlist]").forEach(b=>b.onclick=()=>toggleWishlist(b.dataset.wishlist));
  document.querySelectorAll("[data-compare]").forEach(b=>b.onclick=()=>toggleCompare(b.dataset.compare));
+ document.querySelectorAll(".product-image img").forEach(img=>img.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();openProductImageViewer(img.currentSrc||img.src,img.alt||"পণ্যের ছবি")}));
  renderCompareTray();renderRecentlyViewed();
- document.querySelectorAll(".product-image img").forEach(img=>img.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();openProductImageViewer(img.currentSrc||img.src,img.alt)}));
+
  updateWishlistButton();
 }function cartKey(x){return String(x.id)+"::"+(x.color||"")}
 function addToCart(id,color=""){

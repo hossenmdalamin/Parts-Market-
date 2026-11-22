@@ -19,3 +19,7 @@
 
 /* Dashboard summary cards are keyboard-accessible navigation links */
 #page-dashboard .stats article[data-dashboard-page]{cursor:pointer;transition:border-color .18s ease,transform .18s ease,background .18s ease}#page-dashboard .stats article[data-dashboard-page]:hover{border-color:#e63946;transform:translateY(-2px);background:#191d25}#page-dashboard .stats article[data-dashboard-page]:focus-visible{outline:2px solid #e63946;outline-offset:3px}
+
+
+/* Keep complete colour-variant preview photos visible in the admin editor */
+.variant-existing-images img { object-fit:contain!important; background:#0d1117; }
