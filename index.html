@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=large-product-photo-area-20261122">
+  <link rel="stylesheet" href="./styles.css?v=news-ticker-20261122">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./config.js"></script>
 </head>
@@ -34,6 +34,7 @@
     </a>
     <div class="social-links top-social-links" id="socialLinks" aria-label="Social media links"></div>
   </div>
+  <div id="siteNewsTicker" class="site-news-ticker" hidden></div>
 
   <main>
     <section class="hero hero-premium">
@@ -176,7 +177,8 @@
 
   <a class="admin-shortcut" id="adminOpen" href="./admin.html" title="Admin" aria-label="Admin">⚙</a>
   <div class="toast" id="toast"></div>
-  <script src="./app.js?v=full-image-viewer-20261122-2"></script>
+  <script src="./ticker.js?v=news-ticker-20261122"></script>
+  <script src="./app.js?v=news-ticker-20261122"></script>
   <script>document.getElementById("adminOpen").onclick=()=>{window.location.href="./admin.html";};</script>
 
 <script>

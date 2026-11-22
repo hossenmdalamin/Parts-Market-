@@ -577,3 +577,18 @@ footer{margin-top:20px}
 .detail-main-image{height:min(72vh,620px)!important;min-height:420px!important;padding:10px!important}
 }
 @media(max-width:380px){.product-image{height:205px!important;min-height:205px!important}}
+
+
+/* Store-wide TV-style news ticker */
+.site-news-ticker{display:flex;align-items:stretch;gap:0;min-height:38px;margin:0;padding:0 0 0 clamp(14px,5vw,76px);overflow:hidden;background:linear-gradient(90deg,#21151a,#111923 45%,#17131a);border-bottom:1px solid #49303a;color:#f7f7f8}
+.site-news-ticker[hidden]{display:none!important}
+.news-ticker-label{position:relative;z-index:1;flex:0 0 auto;display:flex;align-items:center;padding:0 14px;background:#d92332;color:#fff;font:700 11px Rajdhani,sans-serif;letter-spacing:1.4px}
+.news-ticker-track{display:flex;align-items:center;min-width:0;flex:1;overflow:hidden}
+.news-ticker-content{display:flex;align-items:center;gap:70px;width:max-content;white-space:nowrap;will-change:transform;animation:parts-market-ticker-scroll 26s linear infinite;padding-left:100%}
+.news-ticker-content span{font-size:13px;font-weight:600;line-height:1.4}
+.site-news-ticker:hover .news-ticker-content{animation-play-state:paused}
+@keyframes parts-market-ticker-scroll{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+@media(max-width:650px){.site-news-ticker{min-height:34px;padding-left:0}.news-ticker-label{padding:0 10px;font-size:10px}.news-ticker-content{gap:42px;animation-duration:22s}.news-ticker-content span{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.news-ticker-content{animation:none;padding-left:12px;white-space:normal}.news-ticker-content span[aria-hidden="true"]{display:none}}
+.ticker-admin-toggle{display:flex!important;align-items:center;gap:9px;margin:12px 0;padding:12px;border:1px solid #343c48;border-radius:8px;background:#141a22}
+.ticker-admin-toggle input{width:18px;height:18px;accent-color:#e63946}
