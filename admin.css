@@ -29,3 +29,6 @@
 
 /* Quick-create category and bike model from product form */
 .quick-add-option{display:inline-flex;align-items:center;width:auto;margin-top:7px;padding:7px 10px;border:1px solid #70404a;border-radius:7px;background:#2b1d24;color:#ffb0b8;font:inherit;font-size:12px;cursor:pointer}.quick-add-option:hover{background:#40232c;border-color:#e63946}.bike-model-picker>.quick-add-option{display:flex}
+
+/* Main Admin-only login history */
+.login-history-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,.8fr);gap:14px;padding:13px 4px;border-bottom:1px solid var(--line);font-size:13px}.login-history-row:last-child{border-bottom:0}.login-history-head{color:var(--muted);font-size:12px}.login-history-row time{color:#c2c8d2}@media(max-width:600px){.login-history-row{grid-template-columns:1fr;gap:4px}}
