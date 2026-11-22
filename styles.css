@@ -592,3 +592,53 @@ footer{margin-top:20px}
 @media(prefers-reduced-motion:reduce){.news-ticker-content{animation:none;padding-left:12px;white-space:normal}.news-ticker-content span[aria-hidden="true"]{display:none}}
 .ticker-admin-toggle{display:flex!important;align-items:center;gap:9px;margin:12px 0;padding:12px;border:1px solid #343c48;border-radius:8px;background:#141a22}
 .ticker-admin-toggle input{width:18px;height:18px;accent-color:#e63946}
+
+
+/* Three equal contact actions in one row, followed by larger social icons */
+.top-contact-strip{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  padding:12px clamp(12px,5vw,76px);
+}
+.contact-action-links{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:9px;
+  width:min(100%,620px);
+}
+.contact-action-link{
+  min-width:0;
+  min-height:66px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:8px 5px;
+  border:1px solid transparent;
+  border-radius:11px;
+  color:#fff;
+  text-decoration:none;
+  text-align:center;
+  transition:filter .2s,transform .2s;
+}
+.contact-action-link:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.contact-action-link>svg{width:23px;height:23px;flex:0 0 23px;fill:currentColor}
+.contact-action-link>span{display:flex;min-width:0;flex-direction:column;align-items:flex-start;gap:2px}
+.contact-action-link b{font-size:12px;line-height:1.25;white-space:nowrap}
+.contact-action-link small{font-size:10px;line-height:1.2;opacity:.94;white-space:nowrap}
+.contact-whatsapp{background:#168b4b;border-color:#28a862}
+.contact-messenger{background:#0879e8;border-color:#278cf0}
+.contact-call{background:#374151;border-color:#596579}
+.top-social-links{display:flex;justify-content:center;gap:12px}
+.top-social-links .social-icon-link{width:38px;height:38px}
+.top-social-links .social-icon-link svg{width:21px;height:21px}
+@media(max-width:380px){
+  .contact-action-links{gap:6px}
+  .contact-action-link{min-height:62px;gap:4px;padding:7px 2px}
+  .contact-action-link>svg{width:20px;height:20px;flex-basis:20px}
+  .contact-action-link b{font-size:10px}
+  .contact-action-link small{font-size:9px}
+}
