@@ -5,12 +5,13 @@ alter table public.profiles drop constraint if exists profiles_role_check;
 alter table public.profiles add constraint profiles_role_check
   check (role in ('customer','admin','main_admin'));
 
--- Promote only the specified account. If this updates 0 rows, create that Auth user first.
-update public.profiles p
-set role = 'main_admin'
-from auth.users u
-where p.id = u.id
-  and lower(u.email) = lower('hossenmdalamin608@gmail.com');
+-- Ensure there is exactly one Main Admin: the specified Auth account.
+update public.profiles set role = 'admin' where role = 'main_admin';
+insert into public.profiles (id, role)
+select id, 'main_admin'
+from auth.users
+where lower(email) = lower('hossenmdalamin608@gmail.com')
+on conflict (id) do update set role = 'main_admin';
 
 create or replace function public.is_admin()
 returns boolean
