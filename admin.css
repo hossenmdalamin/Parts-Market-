@@ -61,3 +61,5 @@
 @media(max-width:600px){.photo-editor-dialog{max-height:calc(100dvh - 18px);padding:10px}.photo-editor-crop-wrap:not([hidden]),.photo-editor-canvas-wrap:not([hidden]){height:45vh;min-height:220px}}
 
 .photo-editor-crop-wrap:not([hidden]){display:flex!important;}
+
+.product-video-fields{display:grid;gap:10px;padding:14px;border:1px solid #354153;border-radius:12px;background:#111923}.product-video-fields>b{color:#ff7184}.product-video-fields label{display:grid;gap:6px}.product-video-fields small{color:#aeb8c6}
