@@ -4,7 +4,7 @@ function toast(t){$('detailToast').textContent=t;$('detailToast').classList.add(
 function videoEmbed(type,url){
  if(!url)return '';
  let u;try{u=new URL(url)}catch{return '<a class="product-video-link" href="'+esc(url)+'" target="_blank" rel="noopener">মূল ভিডিও দেখুন ↗</a>'}
- const host=u.hostname.toLowerCase().replace(/^www\./,'');let src='',valid=false;
+ if(!['http:','https:'].includes(u.protocol))return '<span class="product-video-fallback">ভিডিও লিংকটি সঠিক নয়।</span>';const host=u.hostname.toLowerCase().replace(/^www\./,'');let src='',valid=false;
  if(type==='youtube'&&['youtube.com','m.youtube.com','youtu.be','youtube-nocookie.com'].includes(host)){
   const id=host==='youtu.be'?u.pathname.split('/').filter(Boolean)[0]:(u.searchParams.get('v')||u.pathname.match(/\/(?:embed|shorts)\/([^/?]+)/)?.[1]);
   if(id&&/^[\w-]{6,20}$/.test(id)){src='https://www.youtube-nocookie.com/embed/'+id;valid=true}
