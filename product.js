@@ -33,7 +33,7 @@ async function resolveTikTokEmbeds(){
    const iframe=document.createElement('iframe');
    iframe.src='https://www.tiktok.com/player/v1/'+encodeURIComponent(result.id)+'?controls=1&description=1';
    iframe.title='TikTok video';iframe.loading='lazy';iframe.allow='fullscreen';iframe.allowFullscreen=true;
-   frame.replaceWith(iframe);
+   const wrapper=document.createElement('div');wrapper.className='product-video-frame';wrapper.appendChild(iframe);frame.replaceWith(wrapper);
   }catch(error){
    console.warn('TikTok short-link resolution failed',error);
    frame.innerHTML='<p class="product-video-fallback">TikTok ভিডিওটি এখানে Embed করা যায়নি। নিচের লিংকে মূল ভিডিওটি খুলুন।</p>';
