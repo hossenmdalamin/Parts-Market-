@@ -1,4 +1,4 @@
-const CACHE_NAME = "parts-market-pwa-v2";
+const CACHE_NAME = "parts-market-pwa-v3";
 const APP_SHELL = [
   "./index.html",
   "./track.html",
