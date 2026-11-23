@@ -38,6 +38,7 @@ export async function onRequestGet({ request }) {
         }
       });
       if ([301, 302, 303, 307, 308].includes(response.status)) {
+        response.body?.cancel();
         const location = response.headers.get("location");
         if (!location) return json({ error: "TikTok redirect did not include a destination." }, 502);
         const next = new URL(location, current);
@@ -45,8 +46,23 @@ export async function onRequestGet({ request }) {
         current = next;
         continue;
       }
-      const id = current.pathname.match(/\/video\/(\d+)/)?.[1];
-      if (id) return json({ id, canonicalUrl: current.toString() });
+      let finalUrl = current.toString();
+      let id = current.pathname.match(/\/video\/(\d+)/)?.[1];
+      if (!id && response.ok) {
+        const html = (await response.text()).slice(0, 1500000);
+        const canonical = html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)/i)?.[1]
+          || html.match(/<meta[^>]+property=["']og:url["'][^>]+content=["']([^"']+)/i)?.[1];
+        if (canonical) {
+          const resolved = new URL(canonical.replace(/&amp;/g, "&"), current);
+          if (isAllowed(resolved)) {
+            finalUrl = resolved.toString();
+            id = resolved.pathname.match(/\/video\/(\d+)/)?.[1];
+          }
+        }
+      } else {
+        response.body?.cancel();
+      }
+      if (id) return json({ id, canonicalUrl: finalUrl });
       return json({ error: "Could not find a video ID in the resolved TikTok URL." }, 422);
     }
     return json({ error: "Too many TikTok redirects." }, 502);
