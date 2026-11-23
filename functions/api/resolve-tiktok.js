@@ -18,55 +18,54 @@ function isAllowed(url) {
   return url.protocol === "https:" && ALLOWED_HOSTS.has(url.hostname.toLowerCase());
 }
 
+function videoIdFromOembed(data) {
+  const id = String(data?.embed_product_id || "").match(/^\d{10,25}$/)?.[0];
+  if (id) return id;
+  return String(data?.html || "").match(/player\/v1\/(\d{10,25})/)?.[1] || null;
+}
+
+async function requestOembed(videoUrl) {
+  const endpoint = "https://www.tiktok.com/oembed?url=" + encodeURIComponent(videoUrl);
+  const response = await fetch(endpoint, {
+    headers: {
+      "accept": "application/json",
+      "user-agent": "Mozilla/5.0 (compatible; PartsMarketEmbed/2.0)"
+    }
+  });
+  if (!response.ok) return null;
+  return videoIdFromOembed(await response.json());
+}
+
 export async function onRequestGet({ request }) {
-  const incoming = new URL(request.url);
-  const raw = incoming.searchParams.get("url");
+  const raw = new URL(request.url).searchParams.get("url");
   if (!raw || raw.length > 2048) return json({ error: "A valid TikTok URL is required." }, 400);
 
-  let current;
-  try { current = new URL(raw); } catch { return json({ error: "Invalid URL." }, 400); }
-  if (!isAllowed(current)) return json({ error: "Only TikTok links are supported." }, 400);
+  let original;
+  try { original = new URL(raw); } catch { return json({ error: "Invalid URL." }, 400); }
+  if (!isAllowed(original)) return json({ error: "Only TikTok links are supported." }, 400);
 
   try {
-    for (let hop = 0; hop < 6; hop++) {
-      const response = await fetch(current.toString(), {
-        method: "GET",
-        redirect: "manual",
-        headers: {
-          "user-agent": "Mozilla/5.0 (compatible; PartsMarketVideoResolver/1.0)",
-          "accept": "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8"
-        }
+    // TikTok's official oEmbed endpoint returns the embed product/video ID.
+    let id = await requestOembed(original.href);
+    let canonicalUrl = original.href;
+
+    // Some short links are not accepted by oEmbed directly. Resolve only to
+    // an allowlisted TikTok host, then retry with the canonical video URL.
+    if (!id && ["vt.tiktok.com", "vm.tiktok.com"].includes(original.hostname.toLowerCase())) {
+      const response = await fetch(original.href, {
+        redirect: "follow",
+        headers: { "user-agent": "Mozilla/5.0 (compatible; PartsMarketEmbed/2.0)" }
       });
-      if ([301, 302, 303, 307, 308].includes(response.status)) {
-        response.body?.cancel();
-        const location = response.headers.get("location");
-        if (!location) return json({ error: "TikTok redirect did not include a destination." }, 502);
-        const next = new URL(location, current);
-        if (!isAllowed(next)) return json({ error: "TikTok redirected to an unsupported host." }, 502);
-        current = next;
-        continue;
-      }
-      let finalUrl = current.toString();
-      let id = current.pathname.match(/\/video\/(\d+)/)?.[1];
-      if (!id && response.ok) {
-        const html = (await response.text()).slice(0, 1500000);
-        const canonical = html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)/i)?.[1]
-          || html.match(/<meta[^>]+property=["']og:url["'][^>]+content=["']([^"']+)/i)?.[1];
-        if (canonical) {
-          const resolved = new URL(canonical.replace(/&amp;/g, "&"), current);
-          if (isAllowed(resolved)) {
-            finalUrl = resolved.toString();
-            id = resolved.pathname.match(/\/video\/(\d+)/)?.[1];
-          }
-        }
-      } else {
-        response.body?.cancel();
-      }
-      if (id) return json({ id, canonicalUrl: finalUrl });
-      return json({ error: "Could not find a video ID in the resolved TikTok URL." }, 422);
+      const finalUrl = new URL(response.url);
+      if (!isAllowed(finalUrl)) return json({ error: "TikTok redirected to an unsupported host." }, 502);
+      canonicalUrl = finalUrl.href;
+      id = finalUrl.pathname.match(/\/video\/(\d{10,25})/)?.[1] || null;
+      if (!id) id = await requestOembed(canonicalUrl);
     }
-    return json({ error: "Too many TikTok redirects." }, 502);
+
+    if (!id) return json({ error: "TikTok did not return an embeddable video ID for this link." }, 422);
+    return json({ id, canonicalUrl });
   } catch (error) {
-    return json({ error: "TikTok link could not be resolved.", detail: String(error?.message || error) }, 502);
+    return json({ error: "TikTok embed lookup failed.", detail: String(error?.message || error) }, 502);
   }
 }
