@@ -28,7 +28,7 @@ async function resolveFacebookEmbeds(){
    const response=await fetch('/api/resolve-facebook?url='+encodeURIComponent(frame.dataset.facebookUrl),{headers:{Accept:'application/json'}});
    if(!response.ok)throw new Error('Meta oEmbed '+response.status);
    const result=await response.json();
-   if(!result.src||!/^https:\/\/(www\\.)?facebook\\.com\//.test(result.src))throw new Error('invalid Meta embed URL');
+   if(!result.src||!/^https:\/\/(www\.)?facebook\.com\//.test(result.src))throw new Error('invalid Meta embed URL');
    const iframe=document.createElement('iframe');
    iframe.src=result.src;iframe.title='Facebook video';iframe.loading='lazy';
    iframe.allow='autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share';iframe.allowFullscreen=true;
