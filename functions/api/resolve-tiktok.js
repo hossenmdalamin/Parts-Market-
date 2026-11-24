@@ -20,15 +20,15 @@ function isAllowed(url) {
 
 function videoIdFromUrl(value) {
   const path = value.pathname;
-  return path.match(/\\/video\\/(\\d{10,25})/)?.[1]
-    || path.match(/\\/(?:v|player\\/v1|embed\\/v2)\\/(\\d{10,25})/)?.[1]
+  return path.match(/\/video\/(\d{10,25})/)?.[1]
+    || path.match(/\/(?:v|player\/v1|embed\/v2)\/(\d{10,25})/)?.[1]
     || null;
 }
 
 function videoIdFromOembed(data) {
-  const id = String(data?.embed_product_id || "").match(/^\\d{10,25}$/)?.[0];
+  const id = String(data?.embed_product_id || "").match(/^\d{10,25}$/)?.[0];
   if (id) return id;
-  return String(data?.html || "").match(/player\\/v1\\/(\\d{10,25})/)?.[1] || null;
+  return String(data?.html || "").match(/player\/v1\/(\d{10,25})/)?.[1] || null;
 }
 
 async function requestOembed(videoUrl) {
