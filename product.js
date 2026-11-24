@@ -7,10 +7,10 @@ function videoEmbed(type,url){
  if(!['http:','https:'].includes(u.protocol))return '<span class="product-video-fallback">ভিডিও লিংকটি সঠিক নয়।</span>';
  const host=u.hostname.toLowerCase().replace(/^www\./,'');
  const title={youtube:'YouTube',facebook:'Facebook',tiktok:'TikTok'}[type]||'Video';
- let frame='';
+ let frame='',frameClass='';
  if(type==='youtube'&&['youtube.com','m.youtube.com','youtu.be','youtube-nocookie.com'].includes(host)){
   const id=host==='youtu.be'?u.pathname.split('/').filter(Boolean)[0]:(u.searchParams.get('v')||u.pathname.match(/\/(?:embed|shorts)\/([^/?]+)/)?.[1]);
-  if(id&&/^[\w-]{6,20}$/.test(id))frame='<iframe src="https://www.youtube-nocookie.com/embed/'+esc(id)+'" title="YouTube video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
+  if(id&&/^[\w-]{6,20}$/.test(id)){if(/\/shorts\//i.test(u.pathname))frameClass=' youtube-shorts-frame';frame='<iframe src="https://www.youtube-nocookie.com/embed/'+esc(id)+'" title="YouTube video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>'}
  }else if(type==='facebook'&&['facebook.com','m.facebook.com','web.facebook.com','fb.watch'].includes(host)){
   frame='<div class="fb-video" data-href="'+esc(u.href)+'" data-allowfullscreen="true" data-show-text="false" data-lazy="true"><div class="fb-xfbml-parse-ignore"><blockquote cite="'+esc(u.href)+'"><a href="'+esc(u.href)+'">Facebook video</a></blockquote></div></div>';
  }else if(type==='tiktok'&&['tiktok.com','m.tiktok.com','vt.tiktok.com','vm.tiktok.com','tiktokv.com','www.tiktokv.com'].includes(host)){
@@ -23,7 +23,7 @@ function videoEmbed(type,url){
  let playerMarkup='';
  if(type==='facebook'&&frame)playerMarkup='<div class="product-video-frame facebook-video-frame">'+frame+'</div>';
  else if(type==='tiktok'&&frame)playerMarkup=frame;
- else if(frame)playerMarkup='<div class="product-video-frame">'+frame+'</div>';
+ else if(frame)playerMarkup='<div class="product-video-frame'+frameClass+'">'+frame+'</div>';
  else playerMarkup='<p class="product-video-fallback">এই লিংকটি Embed করা যাচ্ছে না।</p>';
  return '<article class="product-video-card"><h3>'+title+'</h3>'+playerMarkup+fallback+'</article>';
 }
