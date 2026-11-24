@@ -5,16 +5,16 @@ function videoEmbed(type,url){
  if(!url)return '';
  let u;try{u=new URL(url)}catch{return '<a class="product-video-link" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">মূল ভিডিও দেখুন ↗</a>'}
  if(!['http:','https:'].includes(u.protocol))return '<span class="product-video-fallback">ভিডিও লিংকটি সঠিক নয়।</span>';
- const host=u.hostname.toLowerCase().replace(/^www\\./,'');
+ const host=u.hostname.toLowerCase().replace(/^www\./,'');
  const title={youtube:'YouTube',facebook:'Facebook',tiktok:'TikTok'}[type]||'Video';
  let frame='';
  if(type==='youtube'&&['youtube.com','m.youtube.com','youtu.be','youtube-nocookie.com'].includes(host)){
-  const id=host==='youtu.be'?u.pathname.split('/').filter(Boolean)[0]:(u.searchParams.get('v')||u.pathname.match(/\\/(?:embed|shorts)\\/([^/?]+)/)?.[1]);
-  if(id&&/^[\\w-]{6,20}$/.test(id))frame='<iframe src="https://www.youtube-nocookie.com/embed/'+esc(id)+'" title="YouTube video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
+  const id=host==='youtu.be'?u.pathname.split('/').filter(Boolean)[0]:(u.searchParams.get('v')||u.pathname.match(/\/(?:embed|shorts)\/([^/?]+)/)?.[1]);
+  if(id&&/^[\w-]{6,20}$/.test(id))frame='<iframe src="https://www.youtube-nocookie.com/embed/'+esc(id)+'" title="YouTube video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
  }else if(type==='facebook'&&['facebook.com','m.facebook.com','web.facebook.com','fb.watch'].includes(host)){
   frame='<div class="fb-video" data-href="'+esc(u.href)+'" data-width="auto" data-allowfullscreen="true" data-show-text="false" data-lazy="true"><div class="fb-xfbml-parse-ignore"><blockquote cite="'+esc(u.href)+'"><a href="'+esc(u.href)+'">Facebook video</a></blockquote></div></div>';
  }else if(type==='tiktok'&&['tiktok.com','m.tiktok.com','vt.tiktok.com','vm.tiktok.com','tiktokv.com','www.tiktokv.com'].includes(host)){
-  const id=u.pathname.match(/\\/video\\/(\\d{10,25})/)?.[1]||u.pathname.match(/\\/player\\/v1\\/(\\d{10,25})/)?.[1];
+  const id=u.pathname.match(/\/video\/(\d{10,25})/)?.[1]||u.pathname.match(/\/player\/v1\/(\d{10,25})/)?.[1];
   const allow='accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share';
   if(id)frame='<div class="product-video-frame tiktok-player-frame"><iframe src="https://www.tiktok.com/player/v1/'+esc(id)+'?controls=1&play_button=1&description=1&music_info=1&rel=0" title="TikTok video" loading="lazy" allow="'+allow+'" allowfullscreen></iframe></div>';
   else frame='<div class="product-video-frame tiktok-player-frame tiktok-resolve" data-tiktok-url="'+esc(u.href)+'"><p class="product-video-fallback">TikTok ভিডিও লোড হচ্ছে...</p></div>';
