@@ -10,7 +10,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AlertDialog
+import android.app.AlertDialog
 import androidx.core.content.edit
 
 class MainActivity : ComponentActivity() {
