@@ -3,6 +3,13 @@ const CFG = window.PM_CONFIG || {};
 const supabaseReady = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 const db = supabaseReady ? window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY) : null;
 let appliedCoupon = {code:"", discount:0};
+let directOrderItems = null;
+const isDirectCheckoutRoute = new URLSearchParams(location.search).get("checkout") === "direct";
+if (isDirectCheckoutRoute) {
+  try { const savedDirectOrder = JSON.parse(sessionStorage.getItem("pm_direct_order") || "null"); if (Array.isArray(savedDirectOrder) && savedDirectOrder.length) directOrderItems = savedDirectOrder; else sessionStorage.removeItem("pm_direct_order"); }
+  catch { sessionStorage.removeItem("pm_direct_order"); }
+} else { sessionStorage.removeItem("pm_direct_order"); }
+function checkoutItems(){ return directOrderItems?.length ? directOrderItems : cart; }
 let products = [], categories = [], cart = JSON.parse(localStorage.getItem("pm_cart") || "[]"), activeCategory = "সব", currentUser = null, wishlistIds = JSON.parse(localStorage.getItem("pm_wishlist") || "[]"), wishlistMode = false;
 let compareIds = JSON.parse(localStorage.getItem("pm_compare") || "[]").map(String).slice(0,3);
 
@@ -12,7 +19,7 @@ const esc = (s="") => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;
 function toast(msg){$("toast").textContent=msg;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),2500)}
 function saveCart(){localStorage.setItem("pm_cart",JSON.stringify(cart));renderCart()}
 function showModal(id){$(id).classList.add("show");$("overlay").classList.add("show")}
-function hideModal(id){$(id).classList.remove("show");if(!document.querySelector(".modal.show")&&!$("cartDrawer").classList.contains("open"))$("overlay").classList.remove("show")}
+function hideModal(id){$(id).classList.remove("show");if(id==="checkoutModal"&&directOrderItems?.length){directOrderItems=null;sessionStorage.removeItem("pm_direct_order");appliedCoupon={code:"",discount:0};$("couponCode").value="";$("couponMessage").textContent="";renderCouponSummary()}if(!document.querySelector(".modal.show")&&!$("cartDrawer").classList.contains("open"))$("overlay").classList.remove("show")}
 function openCart(){$("cartDrawer").classList.add("open");$("overlay").classList.add("show")}
 function closeCart(){$("cartDrawer").classList.remove("open");if(!document.querySelector(".modal.show"))$("overlay").classList.remove("show")}
 function fallbackProducts(){return [
@@ -226,12 +233,13 @@ function renderCart(){
  document.querySelectorAll("[data-inc]").forEach(b=>b.onclick=()=>changeQty(b.dataset.inc,1));
 }
 function changeQty(key,d){const x=cart.find(i=>cartKey(i)===key);if(!x)return;if(d>0&&x.qty>=x.stock){toast("স্টকের চেয়ে বেশি যোগ করা যাবে না");return}x.qty+=d;if(x.qty<1)cart=cart.filter(i=>cartKey(i)!==key);saveCart()}
-function renderCouponSummary(){const subtotal=cart.reduce((n,x)=>n+Number(x.price||0)*Number(x.qty||0),0);const area=$('checkoutForm')?.elements.delivery_area?.value;const fee=area==='inside_dhaka'?80:area==='outside_dhaka'?150:0;const discount=appliedCoupon.code?Math.min(appliedCoupon.discount,subtotal):0;if($('checkoutSubtotal'))$('checkoutSubtotal').textContent=money(subtotal);if($('checkoutDiscount'))$('checkoutDiscount').textContent=money(discount);if($('checkoutDelivery'))$('checkoutDelivery').textContent=money(fee);if($('checkoutGrandTotal'))$('checkoutGrandTotal').textContent=money(subtotal-discount+fee);if($('removeCoupon'))$('removeCoupon').hidden=!appliedCoupon.code}
-async function applyCoupon(){const code=$('couponCode').value.trim().toUpperCase();if(!code){$('couponMessage').textContent='কুপন কোড লিখুন।';return}if(!db){$('couponMessage').textContent='সার্ভারের সাথে সংযোগ নেই।';return}$('couponMessage').textContent='কুপন যাচাই হচ্ছে...';const {data,error}=await db.rpc('get_coupon_discount',{p_coupon_code:code});if(error){$('couponMessage').textContent='কুপন যাচাই করা যায়নি: '+error.message;return}if(data==null){$('couponMessage').textContent='কুপনটি ভুল, বন্ধ অথবা ব্যবহারের সীমা শেষ।';appliedCoupon={code:'',discount:0};renderCouponSummary();return}const subtotal=cart.reduce((n,x)=>n+Number(x.price||0)*Number(x.qty||0),0);appliedCoupon={code,discount:Number(data)};$('couponMessage').textContent='সফল! '+money(Math.min(Number(data),subtotal))+' ছাড় প্রযোজ্য হয়েছে।';renderCouponSummary()}
+function renderCouponSummary(){const subtotal=checkoutItems().reduce((n,x)=>n+Number(x.price||0)*Number(x.qty||0),0);const area=$('checkoutForm')?.elements.delivery_area?.value;const fee=area==='inside_dhaka'?80:area==='outside_dhaka'?150:0;const discount=appliedCoupon.code?Math.min(appliedCoupon.discount,subtotal):0;if($('checkoutSubtotal'))$('checkoutSubtotal').textContent=money(subtotal);if($('checkoutDiscount'))$('checkoutDiscount').textContent=money(discount);if($('checkoutDelivery'))$('checkoutDelivery').textContent=money(fee);if($('checkoutGrandTotal'))$('checkoutGrandTotal').textContent=money(subtotal-discount+fee);if($('removeCoupon'))$('removeCoupon').hidden=!appliedCoupon.code}
+async function applyCoupon(){const code=$('couponCode').value.trim().toUpperCase();if(!code){$('couponMessage').textContent='কুপন কোড লিখুন।';return}if(!db){$('couponMessage').textContent='সার্ভারের সাথে সংযোগ নেই।';return}$('couponMessage').textContent='কুপন যাচাই হচ্ছে...';const {data,error}=await db.rpc('get_coupon_discount',{p_coupon_code:code});if(error){$('couponMessage').textContent='কুপন যাচাই করা যায়নি: '+error.message;return}if(data==null){$('couponMessage').textContent='কুপনটি ভুল, বন্ধ অথবা ব্যবহারের সীমা শেষ।';appliedCoupon={code:'',discount:0};renderCouponSummary();return}const subtotal=checkoutItems().reduce((n,x)=>n+Number(x.price||0)*Number(x.qty||0),0);appliedCoupon={code,discount:Number(data)};$('couponMessage').textContent='সফল! '+money(Math.min(Number(data),subtotal))+' ছাড় প্রযোজ্য হয়েছে।';renderCouponSummary()}
 async function checkout(e) {
   e.preventDefault();
 
-  if (!cart.length) {
+  const itemsToCheckout = checkoutItems();
+  if (!itemsToCheckout.length) {
     toast("কার্ট খালি");
     return;
   }
@@ -264,7 +272,7 @@ async function checkout(e) {
     return;
   }
 
-  const orderedItems = cart.map(x => ({ ...x }));
+  const orderedItems = itemsToCheckout.map(x => ({ ...x }));
   const subtotal = orderedItems.reduce(
     (sum, x) => sum + x.price * x.qty, 0
   );
@@ -340,10 +348,15 @@ Order Status: Pending — অগ্রিম পেমেন্ট যাচা�
     "https://wa.me/8801954191730?text=" +
     encodeURIComponent(message);
 
-  // Clear cart after successful database order
-  cart = [];
+  // Direct orders use a separate payload and must preserve the existing cart.
+  if (directOrderItems?.length) {
+    sessionStorage.removeItem("pm_direct_order");
+    directOrderItems = null;
+  } else {
+    cart = [];
+    saveCart();
+  }
   appliedCoupon = {code:"", discount:0};
-  saveCart();
   e.target.reset();
   renderCouponSummary();
 
@@ -491,7 +504,7 @@ async function updateAdminView(){
 $("search").addEventListener("input",renderProducts);$("searchBtn").onclick=renderProducts;$("bikeFilter")?.addEventListener("change",renderProducts);$("wishlistToggle")?.addEventListener("click",()=>{wishlistMode=!wishlistMode;updateWishlistButton();renderProducts();$("products").scrollIntoView({behavior:"smooth"})});
 document.querySelectorAll("[data-category]").forEach(b=>b.onclick=()=>{activeCategory=b.dataset.category;document.querySelectorAll("[data-category]").forEach(x=>x.classList.toggle("active",x===b));renderProducts()});
 $("cartOpen").onclick=openCart;$("cartClose").onclick=closeCart;$("overlay").onclick=()=>{closeCart();document.querySelectorAll(".modal.show").forEach(m=>hideModal(m.id))};
-$("checkoutOpen").onclick=()=>{if(!cart.length){toast("কার্ট খালি");return}showModal("checkoutModal")};
+$("checkoutOpen").onclick=()=>{if(!checkoutItems().length){toast("কার্ট খালি");return}showModal("checkoutModal")};
 document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>hideModal(b.dataset.close));
 $("checkoutForm").onsubmit=checkout;$("applyCoupon").onclick=applyCoupon;$("removeCoupon").onclick=()=>{appliedCoupon={code:"",discount:0};$("couponCode").value="";$("couponMessage").textContent="কুপন সরানো হয়েছে।";renderCouponSummary()};$("checkoutForm").elements.delivery_area.onchange=renderCouponSummary;$("adminOpen").onclick=openAdmin;
 $("loginForm").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);$("loginMessage").textContent="লগইন হচ্ছে...";const {data,error}=await db.auth.signInWithPassword({email:f.get("email"),password:f.get("password")});if(error){$("loginMessage").textContent=error.message;return}currentUser=data.user;await updateAdminView()};
@@ -527,4 +540,10 @@ async function loadStoreBranding(){
   $("socialLinks").innerHTML=items.filter(([key])=>data[key]).map(([key,label,icon])=>'<a class="social-icon-link '+icon+'" href="'+esc(data[key])+'" target="_blank" rel="noopener noreferrer" aria-label="'+label+'" title="'+label+'">'+icons[icon]+'</a>').join("");
 }
 loadStoreBranding();
-if(new URLSearchParams(location.search).get("cart")==="1"){openCart();history.replaceState({}, "", location.pathname)}
+const initialParams = new URLSearchParams(location.search);
+if(initialParams.get("checkout")==="direct"){
+  if(directOrderItems?.length){showModal("checkoutModal");renderCouponSummary();}
+  else toast("সরাসরি অর্ডারের পণ্য পাওয়া যায়নি।");
+  history.replaceState({}, "", location.pathname);
+}
+if(initialParams.get("cart")==="1"){openCart();history.replaceState({}, "", location.pathname)}
