@@ -61,7 +61,7 @@ For each item, choose **New repository secret**, enter the exact name, paste its
 
 Never share these values with anyone. Do not add them to a GitHub Issue, Pull Request comment, or repository file.
 
-After all four secrets are saved, open **Actions → Android APK Build → Run workflow** and run it on the `main` branch. The run should upload `parts-market-release-signed` and verify the APK signature. A build from a Pull Request is deliberately unsigned.
+After all four secrets are saved, open **Actions → Android APK Build → Run workflow**. Until Pull Request #26 is merged, select the `feature/android-release-build-signing` branch in the branch dropdown; after it is merged, select `main`. The run should upload `parts-market-release-signed` and verify the APK signature. A build triggered by a Pull Request is deliberately unsigned.
 
 ## If you already created a release key
 
