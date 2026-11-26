@@ -92,17 +92,31 @@ jobs:
           echo "Checking decoded keystore file..."
           ls -l "$ANDROID_KEYSTORE_PATH"
           file "$ANDROID_KEYSTORE_PATH"
+          echo "Decoded byte count: $(wc -c < "$ANDROID_KEYSTORE_PATH")"
+          echo "Decoded SHA-256 (safe to compare; does not reveal the key):"
+          sha256sum "$ANDROID_KEYSTORE_PATH"
+          echo "First 16 bytes (format marker only):"
+          od -An -tx1 -N16 "$ANDROID_KEYSTORE_PATH"
 
-          echo "Checking keystore password and alias..."
-          if ! keytool -list \
-            -keystore "$ANDROID_KEYSTORE_PATH" \
-            -storepass:env ANDROID_KEYSTORE_PASSWORD \
-            -alias "$ANDROID_KEY_ALIAS" >"$RUNNER_TEMP/keytool-list.out" 2>"$RUNNER_TEMP/keytool-list.err"; then
-            echo "::error::Keystore validation failed. Safe keytool diagnostic follows:"
-            cat "$RUNNER_TEMP/keytool-list.out" "$RUNNER_TEMP/keytool-list.err"
+          echo "Checking keystore password, format, and alias..."
+          valid_store_type=""
+          for store_type in PKCS12 JKS; do
+            if keytool -list \
+              -storetype "$store_type" \
+              -keystore "$ANDROID_KEYSTORE_PATH" \
+              -storepass:env ANDROID_KEYSTORE_PASSWORD \
+              -alias "$ANDROID_KEY_ALIAS" >"$RUNNER_TEMP/keytool-list-$store_type.out" 2>"$RUNNER_TEMP/keytool-list-$store_type.err"; then
+              valid_store_type="$store_type"
+              break
+            fi
+          done
+          if [[ -z "$valid_store_type" ]]; then
+            echo "::error::Keystore validation failed for both PKCS12 and JKS. Safe diagnostics follow:"
+            cat "$RUNNER_TEMP/keytool-list-PKCS12.out" "$RUNNER_TEMP/keytool-list-PKCS12.err"
+            cat "$RUNNER_TEMP/keytool-list-JKS.out" "$RUNNER_TEMP/keytool-list-JKS.err"
             exit 1
           fi
-          echo "Keystore and alias check passed."
+          echo "Keystore validation passed using store type: $valid_store_type"
 
           echo "Checking private-key password..."
           if ! keytool -certreq \
