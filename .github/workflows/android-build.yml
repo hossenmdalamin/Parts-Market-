@@ -81,6 +81,36 @@ jobs:
             exit 1
           fi
 
+      - name: Validate release keystore credentials
+        if: steps.signing.outputs.release_signed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          csr="$RUNNER_TEMP/parts-market-key-check.csr"
+          trap 'rm -f "$csr"' EXIT
+
+          echo "Checking keystore password and alias..."
+          if ! keytool -list \
+            -keystore "$ANDROID_KEYSTORE_PATH" \
+            -storepass:env ANDROID_KEYSTORE_PASSWORD \
+            -alias "$ANDROID_KEY_ALIAS" >/dev/null 2>&1; then
+            echo "::error::Keystore file, keystore password, or key alias is invalid."
+            exit 1
+          fi
+          echo "Keystore and alias check passed."
+
+          echo "Checking private-key password..."
+          if ! keytool -certreq \
+            -alias "$ANDROID_KEY_ALIAS" \
+            -keystore "$ANDROID_KEYSTORE_PATH" \
+            -storepass:env ANDROID_KEYSTORE_PASSWORD \
+            -keypass:env ANDROID_KEY_PASSWORD \
+            -file "$csr" >/dev/null 2>&1; then
+            echo "::error::Private key could not be unlocked. Check ANDROID_KEY_PASSWORD."
+            exit 1
+          fi
+          echo "Private-key password check passed."
+
       - name: Build debug and release APKs
         working-directory: android
         run: gradle assembleDebug assembleRelease
