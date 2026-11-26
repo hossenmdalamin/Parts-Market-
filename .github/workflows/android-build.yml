@@ -89,12 +89,17 @@ jobs:
           csr="$RUNNER_TEMP/parts-market-key-check.csr"
           trap 'rm -f "$csr"' EXIT
 
+          echo "Checking decoded keystore file..."
+          ls -l "$ANDROID_KEYSTORE_PATH"
+          file "$ANDROID_KEYSTORE_PATH"
+
           echo "Checking keystore password and alias..."
           if ! keytool -list \
             -keystore "$ANDROID_KEYSTORE_PATH" \
             -storepass:env ANDROID_KEYSTORE_PASSWORD \
-            -alias "$ANDROID_KEY_ALIAS" >/dev/null 2>&1; then
-            echo "::error::Keystore file, keystore password, or key alias is invalid."
+            -alias "$ANDROID_KEY_ALIAS" >"$RUNNER_TEMP/keytool-list.out" 2>"$RUNNER_TEMP/keytool-list.err"; then
+            echo "::error::Keystore validation failed. Safe keytool diagnostic follows:"
+            cat "$RUNNER_TEMP/keytool-list.err"
             exit 1
           fi
           echo "Keystore and alias check passed."
@@ -105,8 +110,9 @@ jobs:
             -keystore "$ANDROID_KEYSTORE_PATH" \
             -storepass:env ANDROID_KEYSTORE_PASSWORD \
             -keypass:env ANDROID_KEY_PASSWORD \
-            -file "$csr" >/dev/null 2>&1; then
-            echo "::error::Private key could not be unlocked. Check ANDROID_KEY_PASSWORD."
+            -file "$csr" >"$RUNNER_TEMP/keytool-key.out" 2>"$RUNNER_TEMP/keytool-key.err"; then
+            echo "::error::Private-key validation failed. Safe keytool diagnostic follows:"
+            cat "$RUNNER_TEMP/keytool-key.err"
             exit 1
           fi
           echo "Private-key password check passed."
