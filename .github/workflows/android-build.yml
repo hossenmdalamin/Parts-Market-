@@ -141,6 +141,58 @@ jobs:
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs \
             android/app/build/outputs/apk/release/app-release.apk
 
+      - name: Check APK alignment and Android package metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
+          ZIPALIGN="$ANDROID_HOME/build-tools/35.0.0/zipalign"
+          APK="android/app/build/outputs/apk/release/app-release.apk"
+
+          "$ZIPALIGN" -c -v 4 "$APK"
+          "$AAPT" dump badging "$APK" | tee "$RUNNER_TEMP/parts-market-badging.txt"
+
+          grep -F "package: name='com.partsmarket.app' versionCode='1' versionName='1.0.0'" "$RUNNER_TEMP/parts-market-badging.txt"
+          grep -F "sdkVersion:'23'" "$RUNNER_TEMP/parts-market-badging.txt"
+          grep -F "targetSdkVersion:'35'" "$RUNNER_TEMP/parts-market-badging.txt"
+
+      - name: Install debug and signed release APKs on Android 13 emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          script: |
+            set -euo pipefail
+            echo "Emulator Android API: $(adb shell getprop ro.build.version.sdk)"
+            adb install -r android/app/build/outputs/apk/release/app-release.apk
+            adb shell pm path com.partsmarket.app
+            adb shell monkey -p com.partsmarket.app 1
+            adb uninstall com.partsmarket.app
+
+            adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+            adb shell pm path com.partsmarket.app
+            adb shell monkey -p com.partsmarket.app 1
+            adb uninstall com.partsmarket.app
+
+      - name: Add APK validation summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo ""
+            echo "## APK installation validation"
+            echo "- APK alignment and package metadata are checked before upload."
+            if [[ "${{ job.status }}" == "success" ]]; then
+              echo "- Debug and signed release APKs installed and launched on an Android 13 emulator."
+            else
+              echo "- APK validation or emulator installation failed; inspect the step above for the exact error."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
