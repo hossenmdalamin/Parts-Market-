@@ -99,7 +99,7 @@ jobs:
             -storepass:env ANDROID_KEYSTORE_PASSWORD \
             -alias "$ANDROID_KEY_ALIAS" >"$RUNNER_TEMP/keytool-list.out" 2>"$RUNNER_TEMP/keytool-list.err"; then
             echo "::error::Keystore validation failed. Safe keytool diagnostic follows:"
-            cat "$RUNNER_TEMP/keytool-list.err"
+            cat "$RUNNER_TEMP/keytool-list.out" "$RUNNER_TEMP/keytool-list.err"
             exit 1
           fi
           echo "Keystore and alias check passed."
@@ -112,7 +112,7 @@ jobs:
             -keypass:env ANDROID_KEY_PASSWORD \
             -file "$csr" >"$RUNNER_TEMP/keytool-key.out" 2>"$RUNNER_TEMP/keytool-key.err"; then
             echo "::error::Private-key validation failed. Safe keytool diagnostic follows:"
-            cat "$RUNNER_TEMP/keytool-key.err"
+            cat "$RUNNER_TEMP/keytool-key.out" "$RUNNER_TEMP/keytool-key.err"
             exit 1
           fi
           echo "Private-key password check passed."
