@@ -68,13 +68,21 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Validate signing key
+        if: github.event_name != 'pull_request'
         run: keytool -list -keystore "$ANDROID_KEYSTORE_PATH" -storepass:env ANDROID_KEYSTORE_PASSWORD -alias "$ANDROID_KEY_ALIAS"
 
-      - name: Build universal APK (single APK, no ABI splits)
+      - name: Build debug APK for pull requests
+        if: github.event_name == 'pull_request'
+        working-directory: android
+        run: gradle assembleDebug
+
+      - name: Build signed release and debug APKs
+        if: github.event_name != 'pull_request'
         working-directory: android
         run: gradle assembleRelease assembleDebug
 
-      - name: Verify release APK
+      - name: Verify signed universal release APK
+        if: github.event_name != 'pull_request'
         run: |
           set -euo pipefail
           APK=android/app/build/outputs/apk/release/app-release.apk
@@ -83,8 +91,10 @@ jobs:
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | tee "$RUNNER_TEMP/badging.txt"
           grep -F "package: name='com.partsmarket.app'" "$RUNNER_TEMP/badging.txt"
           grep -F "sdkVersion:'23'" "$RUNNER_TEMP/badging.txt"
+          grep -F "targetSdkVersion:'35'" "$RUNNER_TEMP/badging.txt"
 
       - name: Upload signed universal release APK
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: parts-market-universal-release
@@ -99,6 +109,22 @@ jobs:
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
+
+      - name: Add build summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Parts Market Android build"
+            echo "- APK is built as a single package without ABI splits."
+            echo "- Minimum Android version: Android 6.0 (API 23)."
+            echo "- Emulator boot is not a prerequisite for building or uploading APK artifacts."
+            if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+              echo "- Pull request validation builds the debug APK only."
+            else
+              echo "- Release APK signing and package metadata are verified before upload."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Clean temporary signing key
         if: always()
