@@ -3,6 +3,11 @@ const assert = require("node:assert/strict");
 
 const BASE = "http://127.0.0.1:4173";
 
+function durationInMs(value) {
+  const v = value.trim();
+  return v.endsWith("ms") ? parseFloat(v) : parseFloat(v) * 1000;
+}
+
 async function main() {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1365, height: 900 } });
@@ -16,6 +21,7 @@ async function main() {
         [".hero-copy", "pmFadeIn"],
         [".hero-visual-glow", "pmSoftPulse"],
         [".hero-orbit-one", "pmOrbitTurn"],
+        [".hero-orbit-two", "pmOrbitTurn"],
         [".hero-product-tile", "pmFadeIn"],
         [".hero-floating-card", "pmFadeIn"],
         [".benefits-premium > div", "pmFadeIn"]
@@ -24,8 +30,10 @@ async function main() {
         [".product-detail-shell > #productDetail", "pmFadeIn"]
       ]},
       { path: "/admin.html", css: "admin.css", checks: [
-        [".admin-welcome", "pmAdminFadeIn"],
-        [".stat-card", "pmAdminFadeIn"]
+        [".topbar", "pmAdminFadeIn"],
+        [".welcome", "pmAdminFadeIn"],
+        [".stats > article", "pmAdminFadeIn"],
+        [".panel", "pmAdminFadeIn"]
       ]}
     ];
 
@@ -38,9 +46,9 @@ async function main() {
       assert(cssText.includes("prefers-reduced-motion: reduce"), item.css + " must support reduced motion");
 
       for (const [selector, expectedAnimation] of item.checks) {
-        const exists = await page.locator(selector).count();
-        assert(exists > 0, item.path + " must contain " + selector);
-        const animation = await page.locator(selector).first().evaluate(el => getComputedStyle(el).animationName);
+        const element = page.locator(selector).first();
+        assert(await element.count() > 0, item.path + " must contain " + selector);
+        const animation = await element.evaluate(el => getComputedStyle(el).animationName);
         assert(animation.split(",").map(value => value.trim()).includes(expectedAnimation),
           selector + " should use " + expectedAnimation + ", got " + animation);
       }
@@ -52,9 +60,10 @@ async function main() {
     assert(await page.locator(".benefits-premium > div").count() === 3, "all benefit items should remain present");
 
     await page.emulateMedia({ reducedMotion: "reduce" });
-    const reducedDuration = await page.locator(".hero-visual-glow").evaluate(el => getComputedStyle(el).animationDuration);
-    assert(reducedDuration.split(",").every(value => parseFloat(value) <= 0.001),
-      "reduced-motion preference should shorten animation duration");
+    const reducedDurations = await page.locator(".hero-visual-glow").evaluate(el =>
+      getComputedStyle(el).animationDuration.split(",").map(durationInMs));
+    assert(reducedDurations.every(value => value <= 0.1),
+      "reduced-motion preference should shorten animation duration to 0.1ms or less");
 
     assert.deepEqual(failures, [], "pages should not throw uncaught JavaScript errors");
     console.log("PASS: desktop pages, mobile layout hooks, animation selectors and reduced-motion behavior.");
