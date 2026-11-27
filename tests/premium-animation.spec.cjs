@@ -60,8 +60,9 @@ async function main() {
     assert(await page.locator(".benefits-premium > div").count() === 3, "all benefit items should remain present");
 
     await page.emulateMedia({ reducedMotion: "reduce" });
-    const reducedDurations = await page.locator(".hero-visual-glow").evaluate(el =>
-      getComputedStyle(el).animationDuration.split(",").map(durationInMs));
+    const reducedDurationValues = await page.locator(".hero-visual-glow").evaluate(el =>
+      getComputedStyle(el).animationDuration.split(","));
+    const reducedDurations = reducedDurationValues.map(durationInMs);
     assert(reducedDurations.every(value => value <= 0.1),
       "reduced-motion preference should shorten animation duration to 0.1ms or less");
 
