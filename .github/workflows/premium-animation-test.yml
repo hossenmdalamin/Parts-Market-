@@ -1,0 +1,54 @@
+name: Premium Animation Browser Tests
+
+on:
+  push:
+    branches: [premium-animation]
+    paths:
+      - "styles.css"
+      - "admin.css"
+      - "index.html"
+      - "product.html"
+      - "admin.html"
+      - "tests/**"
+      - ".github/workflows/premium-animation-test.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "styles.css"
+      - "admin.css"
+      - "index.html"
+      - "product.html"
+      - "admin.html"
+      - "tests/**"
+      - ".github/workflows/premium-animation-test.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start local web server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/parts-market-server.log 2>&1 &
+          echo $! > /tmp/parts-market-server.pid
+          for i in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:4173/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/parts-market-server.log
+          exit 1
+      - name: Run desktop, mobile and reduced-motion checks
+        run: node tests/premium-animation.spec.cjs
